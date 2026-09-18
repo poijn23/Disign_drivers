@@ -1,0 +1,226 @@
+% ============================================================
+\section{Iteración 5 --- DRV-04: política de persistencia}\label{sec:it05}
+% ============================================================
+
+% ------------------------------------------------------------
+\subsection{Driver y alcance}
+
+\begin{tabla}{|L{3.0cm}|Y|}
+\fichacab
+\parte{Driver}{DRV-04 --- Política explícita de persistencia por tipo de dato.}
+\parte{Enunciado}{Se define de antemano qué se persiste de forma confirmada antes de responder y qué de forma diferida con ventana acotada, con constancia de lo perdido, y la capa de datos hacia SQL Server queda aislada del servicio de partidas.}
+\parte{Por qué le toca este turno}{Suma 10 de 15 y llega después de DRV-03 porque la política solo se puede fijar cuando se sabe cuánto tiempo hay disponible: la iteración~4 asignó los topes y confirmó que la escritura no cabe en el camino de la respuesta. Antes de eso, cualquier política sería una preferencia sin fundamento.}
+\parte{Qué decide esta iteración}{Qué se escribe de forma confirmada, qué se escribe dentro de una ventana acotada, qué se pierde cuando la base de datos se cae y cómo queda constancia de ello.}
+\parte{Decisiones ya tomadas}{DEC-01 a DEC-03 y lo decidido en las cuatro iteraciones anteriores. Pesan DEC-03, que hace de la base de datos una condición para jugar, y CD-06 y CD-10, que pusieron el estado vigente en memoria y la escritura fuera del camino de la respuesta.}
+\parte{Qué no decide}{El esquema de tablas ni el modelo relacional completo, que son diseño de datos y no de arquitectura. Tampoco decide Q-12, qué se guarda de un reporte, que pertenece a la iteración~6.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 1. Revisión de entradas}
+
+\subsubsection*{Objetivos de diseño}
+
+\begin{tabla}{|L{1.5cm}|L{5.0cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Objetivo} & \cab{Origen y qué exige aquí} \\ \hline
+\endhead
+OBJ-15 & Nadie pierde su cuenta ni su progreso por una caída. &
+CRN-19, con STK-13. Distingue lo que nunca se puede perder de lo que sí. \\ \hline
+OBJ-16 & Cuando algo se pierde, se sabe exactamente qué fue. &
+CRN-19 y QA-08, con STK-13 y STK-16. Una pérdida silenciosa es peor que una conocida. \\ \hline
+OBJ-17 & El sistema no se queda colgado cuando un tercero deja de responder. &
+CRN-21, con STK-14. Vale para la base de datos y para el servicio de correo. \\ \hline
+OBJ-14 & Lo que el juego registra para poder auditarse no retrasa al jugador. &
+TEN-06. Ya guió el presupuesto de la iteración~4 y aquí fija la ventana. \\ \hline
+\end{tabla}
+
+\subsubsection*{Requisitos funcionales primarios}
+
+\begin{tabla}{|L{1.3cm}|L{4.2cm}|Y|}
+\hline
+\filacab \cab{CU} & \cab{Caso de uso} & \cab{Qué exige de la persistencia} \\ \hline
+\endhead
+CU-25 & Finalizar la partida y aplicar la progresión &
+Es la frontera: escribe en una transacción el estado de la partida, el resultado de cada participación, el elo, la división, la experiencia, el nivel, las monedas y los contadores. Nada de eso se puede perder. \\ \hline
+CU-20, CU-21 & Mover el peón; colocar un muro &
+Cada jugada crea una Jugada con su número de orden, su tipo y el tiempo consumido. Es lo que se escribe muchas veces por partida y lo que admite una ventana. \\ \hline
+CU-26 & Reconectar a una partida en curso &
+Recupera las jugadas y las participaciones cuando el servicio ya no tiene la partida en memoria. \\ \hline
+CU-36, CU-37 & Consultar el historial; ver la repetición de una partida &
+Solo existen si las jugadas quedaron persistidas en orden y completas. \\ \hline
+CU-02, CU-09, CU-38 & Registrar cuenta; cambiar credenciales; comprar en la tienda &
+Escrituras confirmadas fuera de la partida: el jugador no puede creer que ocurrieron si no ocurrieron. \\ \hline
+\end{tabla}
+
+\subsubsection*{Escenarios de atributos de calidad}
+
+\begin{tabla}{|L{1.7cm}|L{3.3cm}|Y|}
+\hline
+\filacab \cab{Escenario} & \cab{Atributo} & \cab{Medida} \\ \hline
+\endhead
+ESC-09 \newline (ASR-05) & Fiabilidad y responsabilidad &
+Tras una caída abrupta de SQL Server con 20 partidas en curso: datos disponibles en menos de 15 minutos, 0 cuentas y progresos confirmados perdidos, como máximo las jugadas de los últimos 5 segundos, 0 registros a medias, el 100~\% de lo perdido en un registro y ningún jugador esperando más de 10 segundos sin aviso. \\ \hline
+ESC-01 \newline (ASR-01) & Desempeño &
+Límite ya repartido en la iteración~4: la escritura tiene el tope que allí se le asignó y no puede retenerse la respuesta. \\ \hline
+ESC-10 & Fiabilidad: tolerancia a fallos &
+Escenario hermano, con el servicio de correo. Comparte la forma de la solución, aunque su importancia dependa de Q-03 y Q-04. \\ \hline
+\end{tabla}
+
+\subsubsection*{Restricciones}
+
+\begin{tabla}{|L{1.9cm}|L{4.3cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Restricción} & \cab{Cómo limita esta iteración} \\ \hline
+\endhead
+CON-04, DEP-03 & El almacenamiento es SQL Server & Fija el modelo relacional y las transacciones, y ata el sistema a su dialecto y a su disponibilidad. \\ \hline
+DEP-04 & Infraestructura externa & La caída no la controla el equipo; la recuperación sí. \\ \hline
+CON-14 & Incrementos auditables cada semana & La prueba de la caída tiene que poder repetirse en cada incremento. \\ \hline
+CON-13 & 14 semanas & Descarta soluciones de alta disponibilidad de base de datos, que exceden el plazo y el alcance. \\ \hline
+\end{tabla}
+
+\subsubsection*{Decisiones de proyecto ya tomadas}
+
+\begin{tabla}{|L{1.5cm}|L{4.3cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Decisión} & \cab{Qué impone a esta iteración} \\ \hline
+\endhead
+DEC-03 & La partida en línea exige base de datos & Sin base de datos la partida no continúa: la política no puede ser seguir jugando a ciegas. \\ \hline
+CD-06 & Copia de trabajo en memoria con respaldo obligatorio & El estado vigente está en memoria, así que lo que se persiste es el respaldo y no la fuente. \\ \hline
+CD-10 & Escritura fuera del camino de la respuesta & Ya existe una cola; aquí se define qué entra en ella y qué no. \\ \hline
+CD-23 & Presupuesto repartido por tramo & La escritura confirmada de CU-25 ocurre fuera del turno, así que puede permitirse esperar. \\ \hline
+\end{tabla}
+
+\subsubsection*{Concerns}
+
+\begin{tabla}{|L{1.5cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Concern y qué aporta a la iteración} \\ \hline
+\endhead
+CRN-19 & \emph{Si el servidor se cae, tengo que poder recuperar las cuentas, el progreso y las partidas. Necesito que se defina qué información es aceptable perder, porque guardarlo todo al instante cuesta tiempo de respuesta.} \\ \hline
+CRN-21 & Si un tercero deja de responder, el sistema debe reintentar, dejar el trabajo pendiente o degradarse de forma controlada, pero nunca quedarse colgado. \\ \hline
+CRN-02 & El jugador espera respuesta inmediata, que es el otro lado de TEN-06. \\ \hline
+CRN-18 & Una sanción solo se puede revisar si quedó registrada con su evidencia. \\ \hline
+\end{tabla}
+
+\subsubsection*{Preguntas abiertas que condicionan la iteración}
+
+\begin{tabla}{|L{1.3cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Cómo condiciona} \\ \hline
+\endhead
+Q-12 & Qué se almacena de un reporte, solo el conteo o también el contenido. Cambia el volumen de datos de menores, y se decide en la iteración~6. \\ \hline
+Q-04 & Si el registro se valida por correo, lo que añade a DEP-01 al mismo problema de terceros que no responden. \\ \hline
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 2. Objetivo de la iteración y selección de entradas}
+
+\subsubsection*{Priorización de las entradas}
+
+\begin{tabla}{|L{3.2cm}|L{1.3cm}|Y|L{2.2cm}|}
+\hline
+\filacab \cab{Entrada} & \cab{Peso} & \cab{Por qué pesa lo que pesa} & \cab{Decisión} \\ \hline
+\endhead
+ESC-09 (ASR-05) & Alto & Es la medida del objetivo y decide si la política es uniforme o por tipo de dato. & Se atiende \\ \hline
+CU-25 & Alto & Define lo que nunca se puede perder y el momento en que el resultado se vuelve definitivo. & Se atiende \\ \hline
+CU-20, CU-21 & Alto & Definen lo que se escribe muchas veces por partida y lo que admite la ventana. & Se atiende \\ \hline
+DEC-03 & Alto & Descarta la alternativa de seguir jugando sin base de datos, y con ella la degradación permisiva. & Se atiende \\ \hline
+CRN-19, CRN-21 & Alto & Son el origen de la medida y de la obligación de no quedarse colgado. & Se atiende \\ \hline
+CON-04, DEP-03, DEP-04 & Medio & Fijan la tecnología y lo que puede fallar, no la política. & Se atiende como supuesto \\ \hline
+CU-26, CU-36, CU-37 & Medio & Consumen lo persistido; dicen qué tiene que quedar guardado y en qué orden. & Se atiende \\ \hline
+ESC-01 & Medio, como límite & El tope de la escritura ya está asignado; aquí solo se respeta. & Se atiende como restricción \\ \hline
+ESC-10 & Bajo & Comparte la forma de la solución, pero su importancia depende de Q-03 y Q-04. & Se atiende por analogía \\ \hline
+Q-12 & Bajo aquí & Cambia el volumen, no la política. & Se difiere a la iteración~6 \\ \hline
+\end{tabla}
+
+\subsubsection*{Objetivo de la iteración}
+
+\begin{tabla}{|L{3.0cm}|Y|}
+\fichacab
+\parte{Objetivo}{Que una caída de la base de datos no pierda nada confirmado, pierda solo lo acordado de las partidas en curso y deje constancia exacta de ello.}
+\parte{Driver que cubre}{DRV-04.}
+\parte{Medida}{La de ESC-09: con 20 partidas en curso y una caída abrupta, los datos vuelven en menos de 15 minutos, se pierden 0 cuentas y 0 progresos confirmados, como máximo las jugadas de los últimos 5 segundos, no queda ningún registro a medias, el 100~\% de lo perdido aparece en un registro con su partida y sus jugadas, y ningún jugador espera más de 10 segundos sin aviso.}
+\parte{Límite que respeta}{ESC-01. La escritura conserva el tope que la iteración~4 le asignó y no retiene la respuesta al jugador.}
+\parte{Incremento que produce}{Una prueba que detiene SQL Server de golpe con 20 partidas automáticas en curso y muestra tres cosas: el aviso que reciben los jugadores, el registro de lo que se perdió y la reanudación de las partidas cuando la base vuelve, con el estado que tenían.}
+\parte{Criterio de éxito}{La iteración termina cuando esa prueba cumple las seis cifras de la medida y la comprobación de integridad de la base de datos no encuentra registros a medias.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 3. Elemento a descomponer}
+
+% ------------------------------------------------------------
+\Needspace*{0.4\textheight}
+\subsubsection*{EL-05 --- Servicio de acceso a datos}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Elemento}{El servicio de acceso a datos: la pieza que traduce entre lo que el servidor tiene en memoria y lo que SQL Server guarda, y la única que habla con la base de datos.}
+\parte{Qué abarca}{Las escrituras de partida, jugada, participación, cuenta, progresión y sanción; las lecturas de reconstrucción de CU-26 y de consulta de CU-36 y CU-37; el manejo de transacciones; los tiempos límite; la cola de lo pendiente; la vigilancia de la conexión y el registro de lo perdido. No abarca el estado vigente, que vive en memoria por CD-06.}
+\parte{Por qué se elige}{Porque la medida del objetivo describe exactamente su comportamiento ante una caída: qué sobrevive, qué se pierde y qué queda anotado. Se elige frente al servicio de estado de la partida, que ya tiene su iteración y que en esta solo aparece como cliente de este servicio, y frente al esquema de la base de datos, que es diseño de datos y no decide qué se escribe ni cuándo.}
+\parte{Qué falta decidir sobre él}{Qué se escribe antes de dar algo por hecho y qué dentro de la ventana. Qué hace cuando la base de datos no responde: esperar, encolar o avisar. Cómo sabe que la conexión se perdió, dado que no basta con que falle la siguiente escritura. Y cómo se reconstruye una partida cuando el servicio ya no la tiene en memoria.}
+\parte{Evidencia en los casos de uso}{CU-25 abre una transacción y escribe el estado de la partida, el resultado de cada participación y la progresión (pasos 4 a 6), que es el ejemplo de lo que no se puede perder. CU-21 crea una Jugada por turno (paso 16), que es el ejemplo de lo que se escribe muchas veces. CU-26 recupera todas las jugadas al reconectar (paso 9). Los tres describen qué se guarda, pero ninguno dice qué ocurre si la base de datos no está en ese momento.}
+\parte{Trazabilidad}{DRV-04, DRV-01. DEC-03. CD-06, CD-10, CD-23. ESC-09 (ASR-05), con ESC-01 como límite y ESC-10 como escenario hermano. CU-20, CU-21, CU-25, CU-26, CU-36, CU-37. CON-04, DEP-03, DEP-04. CRN-19, CRN-21, CRN-02. TEN-06. QA-06, QA-08. STK-13, STK-14, STK-16.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 4. Conceptos de diseño}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-28 --- Dos caminos de escritura según el tipo de dato}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Patrón de persistencia.}
+\parte{Descripción}{Lo que el jugador da por hecho, cuentas, credenciales, progresión, compras y sanciones, se escribe de forma confirmada antes de responderle; las jugadas de una partida en curso se escriben dentro de una ventana de cinco segundos. Atiende ESC-09 en sus dos cifras a la vez, 0 progresos perdidos y 5 segundos de jugadas. Se elige frente a una política uniforme: toda síncrona rompe el presupuesto de la iteración~4, y toda diferida incumple la parte que exige 0 pérdidas confirmadas.}
+\parte{Efectos}{Obliga a clasificar cada dato del sistema en uno de los dos caminos antes de construir, y esa clasificación pasa a ser parte del diseño de datos. CU-25 queda en el camino confirmado, que es lo que justifica que su PRE-04 se mantenga. Lo que se escribe rápido y mucho deja de competir por el turno.}
+\parte{Trazabilidad}{DRV-04, DRV-03. DEC-03. CD-10. ESC-09 (ASR-05), ESC-01. CU-25, CU-20, CU-21, CU-02, CU-38. CON-04, DEP-03. CRN-19, CRN-02. TEN-06. STK-13, STK-01.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-29 --- Cola de pendientes con registro de lo perdido}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Táctica de disponibilidad: recuperación, con reintento acotado.}
+\parte{Descripción}{Lo que espera a escribirse pasa por una cola con tamaño máximo y reintentos; si algo no llega a escribirse, queda anotado en un registro con la partida y las jugadas afectadas. Atiende la parte de ESC-09 que exige el 100~\% de lo perdido en un registro. Se elige frente a reintentar sin límite, que convierte una caída larga en memoria agotada, y frente a descartar en silencio, que es justo lo que CRN-19 quiere evitar.}
+\parte{Efectos}{La pérdida deja de ser un accidente y pasa a ser un hecho conocido y consultable, que es lo que QA-08 pide. El tamaño de la cola es una decisión explícita: define cuánto tiempo de caída se tolera antes de tener que suspender. Da a STK-13 y STK-16 la evidencia que necesitan.}
+\parte{Trazabilidad}{DRV-04. CD-09, CD-10, CD-28. ESC-09, ESC-10. CU-20, CU-21, CU-25. DEP-03, DEP-04. CRN-19, CRN-21. QA-08. STK-13, STK-16, STK-14.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-30 --- Vigilancia de la conexión y suspensión controlada de la partida}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Táctica de disponibilidad: detección de fallos y degradación controlada.}
+\parte{Descripción}{El servicio comprueba de forma periódica que la conexión con SQL Server sigue viva, en lugar de enterarse cuando falla la siguiente escritura. Al perderla, las partidas en curso se suspenden: el reloj se congela, dejan de aceptarse jugadas y los jugadores reciben aviso. Atiende DEC-03, que no permite jugar sin base de datos, y la parte de ESC-09 que exige aviso en menos de diez segundos. Se elige frente a seguir arbitrando y escribir después, que dejaría avanzar partidas cuyo resultado podría no poder registrarse.}
+\parte{Efectos}{Los casos de uso del turno ganan un flujo de excepción por suspensión, que hoy no tienen. El jugador recibe una explicación en lugar de un juego que no responde (CRN-21). La reanudación se apoya en CD-31, porque el estado desde el que se sigue es el persistido más lo que la cola logre vaciar.}
+\parte{Trazabilidad}{DRV-04, DRV-01. DEC-03. CD-04, CD-06, CD-29. ESC-09. CU-20, CU-21, CU-25, CU-26 (PRE-04). DEP-03, DEP-04. CRN-21, CRN-19, CRN-06. STK-14, STK-13, STK-01.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-31 --- Reconstrucción por jugadas y punto de confirmación al cierre}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Táctica de disponibilidad: recuperación del estado.}
+\parte{Descripción}{Una partida se reconstruye aplicando en orden sus jugadas persistidas sobre los parámetros con que nació, y al terminar, CU-25 escribe en una sola transacción el resultado y la progresión, que es el punto a partir del cual ya nada se puede perder. Atiende ESC-09 en la parte de 0 registros a medias y hace posible la reanudación tras una suspensión o un reinicio. Se elige frente a guardar instantáneas del tablero completo en cada jugada, que multiplica la escritura sin añadir nada que las jugadas no digan ya.}
+\parte{Efectos}{Exige que el motor sea determinista, que CD-20 ya garantiza, y que los parámetros de la partida queden guardados con ella, que CD-19 ya exige. CU-26 y CU-37 usan la misma reconstrucción, así que la repetición de una partida y el regreso de un jugador comparten mecanismo.}
+\parte{Trazabilidad}{DRV-04, DRV-05. CD-19, CD-20, CD-28. ESC-09, ESC-17. CU-25 (pasos 4 a 6), CU-26 (paso 9), CU-21 (paso 16), CU-37. CON-04. CRN-19, CRN-17. STK-13, STK-10.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-32 --- Acceso a datos aislado tras repositorios}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Patrón de acceso a datos.}
+\parte{Descripción}{Ningún otro servicio escribe consultas: todos piden operaciones con sentido de negocio a repositorios que son los únicos que conocen el dialecto de SQL Server y las transacciones. Atiende ESC-09 porque concentra en un solo lugar los tiempos límite, los reintentos y el manejo de la caída, en vez de repartirlos por todo el servidor. Se elige frente a consultas repartidas por los servicios, que obligaría a implementar la misma política de fallo en cada uno.}
+\parte{Efectos}{El acoplamiento con CON-04 queda confinado a una capa, lo que también protege frente a un cambio de motor. La regresión sin interfaz de CD-22 puede sustituir los repositorios por dobles de prueba y ejecutar partidas sin base de datos, aunque jugar de verdad siga exigiéndola por DEC-03.}
+\parte{Trazabilidad}{DRV-04, DRV-05. CD-03, CD-22, CD-28. ESC-09, ESC-17. CU-25, CU-26, CU-36, CU-37. CON-04, DEP-03. CRN-19, CRN-17. STK-13, STK-10, STK-05.}
+\end{tabla}

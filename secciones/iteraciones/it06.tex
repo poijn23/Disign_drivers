@@ -1,0 +1,239 @@
+% ============================================================
+\section{Iteración 6 --- DRV-06: protección del menor}\label{sec:it06}
+% ============================================================
+
+% ------------------------------------------------------------
+\subsection{Driver y alcance}
+
+\begin{tabla}{|L{3.0cm}|Y|}
+\fichacab
+\parte{Driver}{DRV-06 --- Protección del menor: control en el servidor, acceso que un niño puede completar y datos mínimos.}
+\parte{Enunciado}{El sistema se diseña para un niño de 8 años sin un adulto al lado, con un tutor que puede vetar el juego y un asesor legal que regula sus datos: el filtro de chat se aplica en el servidor y falla cerrado; reportes y sanciones dejan rastro; el segundo factor lo completa el niño solo o con el tutor; y se guarda del menor lo mínimo.}
+\parte{Por qué le toca este turno}{Suma 8 de 15 y llega después de la persistencia porque el rastro de reportes y sanciones que exige se apoya en la política de escritura de la iteración~5, y el filtro vive donde está la autoridad, que decidió la iteración~1.}
+\parte{Qué decide esta iteración}{Cómo se impide que un mensaje inapropiado llegue a un menor, incluso cuando el filtro no funciona, y qué se guarda de lo que los menores escriben.}
+\parte{Decisiones ya tomadas}{DEC-01 a DEC-03 y lo decidido en las cinco iteraciones anteriores. Pesan DEC-02, que impide que el filtro viva en el cliente, y CD-28, que obliga a clasificar cada dato nuevo en uno de los dos caminos de escritura.}
+\parte{Qué no decide}{El acceso con segundo factor que un niño completa solo (ESC-03), que es la otra mitad del driver y necesita el módulo de cuentas: queda para una iteración posterior. Tampoco decide Q-06, si habrá revisión humana, que corresponde a STK-04 y STK-17.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 1. Revisión de entradas}
+
+\subsubsection*{Objetivos de diseño}
+
+\begin{tabla}{|L{1.5cm}|L{5.0cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Objetivo} & \cab{Origen y qué exige aquí} \\ \hline
+\endhead
+OBJ-18 & Un padre puede dejar jugar a su hijo sin vigilarlo. &
+CRN-04, con STK-02, que tiene poder de veto sobre el uso del juego. \\ \hline
+OBJ-19 & El juego cumple las reglas de contenido de las plataformas y de cada región. &
+CRN-25, con STK-19 y STK-17. Puede provocar el rechazo del producto. \\ \hline
+OBJ-20 & Una sanción se puede revisar, y un jugador no puede ser castigado por un grupo coordinado. &
+CRN-18, con STK-01 y STK-17. \\ \hline
+OBJ-07 & Se guarda del menor lo mínimo. &
+CRN-05, con STK-02 y STK-17. Compite de frente con el objetivo anterior (TEN-02). \\ \hline
+\end{tabla}
+
+\subsubsection*{Requisitos funcionales primarios}
+
+\begin{tabla}{|L{1.3cm}|L{4.2cm}|Y|}
+\hline
+\filacab \cab{CU} & \cab{Caso de uso} & \cab{Qué exige del chat} \\ \hline
+\endhead
+CU-28 & Enviar un mensaje de chat &
+Tres canales, partida, global y amigos; comprobación de sanción de chat vigente (RN-05), de acceso al canal, de ritmo de envío (RN-04) y contraste contra el catálogo de palabras prohibidas en el idioma del canal (RN-01); entrega solo a quien no haya bloqueado ni silenciado al autor (RN-06, RN-07). \\ \hline
+CU-29 & Enviar un emote &
+Comparte canal y filtros, sin texto libre: es la alternativa que queda si el chat se suspende. \\ \hline
+CU-33 & Silenciar o bloquear a un jugador &
+Da al propio jugador una defensa inmediata, que el servidor aplica al entregar. \\ \hline
+CU-42, CU-43, CU-44 & Reportar a un jugador; revisar un reporte; aplicar una sanción &
+El reporte necesita contexto para poder revisarse, y la sanción tiene que quedar ligada a quien la pidió y a lo que la motivó. \\ \hline
+CU-45 & Apelar una sanción &
+Solo es posible si la evidencia que motivó la sanción se conservó. \\ \hline
+\end{tabla}
+
+\subsubsection*{Escenarios de atributos de calidad}
+
+\begin{tabla}{|L{1.7cm}|L{3.3cm}|Y|}
+\hline
+\filacab \cab{Escenario} & \cab{Atributo} & \cab{Medida} \\ \hline
+\endhead
+ESC-04 & Protección del usuario menor &
+Con 300 mensajes de prueba, 50 insultos escritos tal cual y en 5 variantes disfrazadas cada uno: el 100~\% de los escritos tal cual se bloquea y al menos el 95~\% de las variantes; menos del 2~\% de 500 frases normales se bloquea por error; los enviados desde un cliente alterado se bloquean igual; y con el filtro caído, 0 mensajes llegan sin filtrar y el aviso de chat suspendido aparece en menos de 2 segundos. \\ \hline
+ESC-07 & Responsabilidad &
+En una simulación con 10 cuentas coordinadas contra 20 jugadores sin conducta inapropiada, 0 reciben sanción automática; toda sanción aplicada se puede consultar y revertir en menos de 5 minutos; y la base de datos contiene 0 mensajes de conversaciones no reportadas. \\ \hline
+ESC-05 & Seguridad: integridad &
+Condición. El filtro vive donde vive la autoridad, así que un cliente alterado no puede saltárselo. \\ \hline
+\end{tabla}
+
+\subsubsection*{Restricciones}
+
+\begin{tabla}{|L{1.9cm}|L{4.3cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Restricción} & \cab{Cómo limita esta iteración} \\ \hline
+\endhead
+CON-09 & El chat debe contar con filtro de palabras & Es obligatorio y no evadible, lo que decide dónde se aplica. \\ \hline
+CON-10 & Debe existir un mecanismo de moderación de conductas & El cliente propuso la sanción automática por número de reportes, que es lo que ESC-07 pone a prueba. \\ \hline
+CON-11, CON-05 & Cambio de idioma y textos en Unicode & El filtro trabaja sobre texto en varios idiomas y sistemas de escritura. \\ \hline
+CON-12 & Comprensible para niños de 8 años & El aviso de mensaje bloqueado o chat suspendido tiene que entenderlo un niño. \\ \hline
+\end{tabla}
+
+\subsubsection*{Decisiones de proyecto ya tomadas}
+
+\begin{tabla}{|L{1.5cm}|L{4.3cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Decisión} & \cab{Qué impone a esta iteración} \\ \hline
+\endhead
+DEC-02 & Toda la lógica del juego en el servidor & El filtro no puede vivir en el cliente, donde un cliente alterado lo quitaría. \\ \hline
+CD-08, CD-09 & Autenticación por mensaje y registro de intentos & Cada mensaje de chat llega ligado a una cuenta, que es lo que permite sancionar y revisar. \\ \hline
+CD-28 & Dos caminos de escritura & Las sanciones van al camino confirmado; los mensajes, si se guardan, al que se decida aquí. \\ \hline
+CD-30 & Suspensión controlada ante la caída de un tercero & Da la forma de la respuesta cuando el filtro no está disponible. \\ \hline
+\end{tabla}
+
+\subsubsection*{Concerns}
+
+\begin{tabla}{|L{1.5cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Concern y qué aporta a la iteración} \\ \hline
+\endhead
+CRN-04 & \emph{No voy a dejar que mi hijo juegue si en el chat puede encontrarse insultos o que un desconocido intente hablarle.} \\ \hline
+CRN-18 & El jugador teme que lo reporten solo por haber ganado y que lo sancionen sin que nadie revise lo ocurrido. \\ \hline
+CRN-05 & El tutor no quiere dar más datos del menor de los imprescindibles, y eso incluye lo que su hijo escribe. \\ \hline
+CRN-25 & Las plataformas exigen una política de chat conforme a la regulación de cada región. \\ \hline
+\end{tabla}
+
+\subsubsection*{Preguntas abiertas que condicionan la iteración}
+
+\begin{tabla}{|L{1.3cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Cómo condiciona} \\ \hline
+\endhead
+Q-06 & Si la moderación será automática o incluirá revisión humana. El diseño tiene que servir para las dos respuestas sin decidirla. \\ \hline
+Q-12 & Qué se almacena de un reporte: solo el conteo o también el contenido. Es la pregunta que TEN-02 deja abierta. \\ \hline
+Q-05 & Cómo se distingue a un menor sin pedir datos de más. Afecta a si el chat viene desactivado por omisión. \\ \hline
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 2. Objetivo de la iteración y selección de entradas}
+
+\subsubsection*{Priorización de las entradas}
+
+\begin{tabla}{|L{3.2cm}|L{1.3cm}|Y|L{2.2cm}|}
+\hline
+\filacab \cab{Entrada} & \cab{Peso} & \cab{Por qué pesa lo que pesa} & \cab{Decisión} \\ \hline
+\endhead
+ESC-04 & Alto & Es la medida del objetivo, y su variante degradada decide qué pasa cuando el filtro falla. & Se atiende \\ \hline
+CU-28 & Alto & Describe el camino completo de un mensaje y todas las comprobaciones que el servidor hace antes de entregarlo. & Se atiende \\ \hline
+CON-09, DEC-02 & Alto & Juntos deciden dónde vive el filtro y descartan el cliente. & Se atiende \\ \hline
+CRN-04, CRN-05 & Alto & Son los dos lados de TEN-02: proteger al menor y guardar de él lo mínimo. & Se atiende \\ \hline
+ESC-07 & Medio & Aporta el rastro de reportes y sanciones, que se apoya en CD-09 y CD-28 más que en decisiones nuevas. & Se atiende en parte \\ \hline
+CU-33, CU-29 & Medio & Dan al jugador defensas que el servidor aplica al entregar, y una alternativa cuando el chat se suspende. & Se atiende \\ \hline
+CU-42 a CU-45 & Medio & Definen qué evidencia hace falta para revisar una sanción. & Se atiende como obligación \\ \hline
+CON-11, CON-05 & Medio & El filtro trabaja por idioma, lo que enlaza con la iteración~7. & Se atiende \\ \hline
+Q-06, Q-12 & Bajo & No se resuelven aquí; el diseño tiene que servir para cualquiera de sus respuestas. & Se atiende como condición \\ \hline
+ESC-03 & Bajo aquí & Es la otra mitad del driver y vive en el módulo de cuentas. & Se difiere a una iteración posterior \\ \hline
+\end{tabla}
+
+\subsubsection*{Objetivo de la iteración}
+
+\begin{tabla}{|L{3.0cm}|Y|}
+\fichacab
+\parte{Objetivo}{Que ningún mensaje inapropiado llegue a un menor, ni siquiera cuando el filtro deja de funcionar.}
+\parte{Driver que cubre}{DRV-06, en lo que hace al chat y a lo que se guarda de él.}
+\parte{Medida}{La de ESC-04: de 300 mensajes de prueba, el 100~\% de los insultos escritos tal cual se bloquea y al menos el 95~\% de las variantes disfrazadas; menos del 2~\% de 500 frases normales se bloquea por error; los enviados desde un cliente alterado se bloquean igual; y con el filtro caído, 0 mensajes llegan sin filtrar, con aviso en menos de 2 segundos.}
+\parte{Límite que respeta}{ESC-07 y CRN-05. La protección no puede lograrse guardando todas las conversaciones de menores: la base de datos debe quedar con 0 mensajes de conversaciones no reportadas.}
+\parte{Incremento que produce}{Una partida con chat entre dos clientes en la que un cliente de prueba envía la lista de insultos por la interfaz y también saltándose la interfaz, y ninguno llega; y una prueba que detiene el componente de filtrado y muestra que el chat se suspende con aviso, mientras la partida continúa.}
+\parte{Criterio de éxito}{La iteración termina cuando las cuatro cifras de ESC-04 se cumplen y la consulta a la base de datos no encuentra mensajes no reportados.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 3. Elemento a descomponer}
+
+% ------------------------------------------------------------
+\Needspace*{0.4\textheight}
+\subsubsection*{EL-06 --- Servicio de chat}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Elemento}{El servicio de chat: la pieza del servidor que recibe un mensaje, decide si puede existir y a quién se entrega.}
+\parte{Qué abarca}{Las comprobaciones de CU-28 antes de entregar, el filtrado contra el catálogo de palabras prohibidas, la determinación de destinatarios con bloqueos y silencios, la decisión de qué se conserva y el comportamiento cuando el filtro no responde. No abarca la moderación humana ni el panel administrativo, que dependen de Q-06.}
+\parte{Por qué se elige}{Porque la medida del objetivo describe su comportamiento, tanto en operación normal como cuando falla. Se elige frente al módulo de cuentas, donde vive la otra mitad del driver y que tiene su propia medida en ESC-03, y frente al servicio de estado de la partida, que comparte el canal con el chat pero no decide qué mensajes existen.}
+\parte{Qué falta decidir sobre él}{Dónde se aplica el filtro y con qué catálogo. Cómo se tratan las variantes disfrazadas, que son las que la medida exige detectar al 95~\%. Qué ocurre cuando el filtro no está disponible. Y qué se conserva de lo que se escribe, que es lo que TEN-02 deja en disputa entre CRN-04 y CRN-05.}
+\parte{Evidencia en los casos de uso}{CU-28 detalla en sus pasos 7 a 14 las cinco comprobaciones que el servidor hace antes de entregar: sanción vigente, acceso al canal, largo, ritmo y catálogo de palabras prohibidas por idioma. En su paso 4, el cliente también valida el largo, lo que confirma que el cliente ayuda pero nunca decide. Lo que el caso de uso no dice es qué ocurre si el filtro del paso 11 no responde, ni cuánto tiempo vive el Mensaje que crea en el paso 12.}
+\parte{Trazabilidad}{DRV-06. DEC-02. CD-08, CD-09, CD-28, CD-30. ESC-04, con ESC-07 y CRN-05 como límites. CU-28, CU-29, CU-33, CU-42, CU-43, CU-44, CU-45. CON-09, CON-10, CON-11, CON-12. CRN-04, CRN-05, CRN-18, CRN-25. TEN-02. Q-05, Q-06, Q-12. STK-02, STK-17, STK-19, STK-01.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 4. Conceptos de diseño}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-33 --- Filtro aplicado en el servidor, en el camino de entrega}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Táctica de protección: control obligatorio en un único punto.}
+\parte{Descripción}{Todo mensaje pasa por el filtro dentro del servidor antes de determinarse sus destinatarios, sin que exista ninguna ruta de entrega que lo evite. Atiende ESC-04 en la parte que exige que los mensajes enviados desde un cliente alterado se bloqueen igual. Se elige frente a filtrar en el cliente que escribe o en el que recibe, que un cliente modificado quitaría, y frente a filtrar después de entregar, que llegaría tarde por definición.}
+\parte{Efectos}{El chat depende del servidor incluso entre dos jugadores de la misma partida, sin entrega directa entre clientes. El filtro entra en el camino del mensaje, así que su costo se presupuesta como el de una jugada, aunque el chat no compita por el turno. El cliente sigue comprobando el largo, como en el paso 4 de CU-28, para evitar viajes inútiles.}
+\parte{Trazabilidad}{DRV-06, DRV-01. DEC-02. CD-01, CD-02, CD-08. ESC-04, ESC-05. CU-28 (paso 11), CU-29. CON-09. CRN-04, CRN-23. STK-02, STK-17, STK-19.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-34 --- Catálogo de palabras prohibidas externo, por idioma y ámbito}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Patrón de configuración, con táctica de protección.}
+\parte{Descripción}{Las palabras prohibidas viven en un catálogo fuera del código, con su idioma y su ámbito, tal como CU-28 describe en su RN-01, y se pueden ampliar sin desplegar una versión nueva. Atiende ESC-04 porque la lista cambia con el tiempo y con cada idioma que se agregue, y ninguna lista fija sirve mucho tiempo. Se elige frente a una lista escrita en el código, que obligaría a un despliegue por cada palabra nueva.}
+\parte{Efectos}{Enlaza con la iteración~7: cada idioma nuevo trae su catálogo, además de sus textos. Obliga a decidir quién puede cambiar el catálogo, que es una operación sensible. Un catálogo mal formado no puede tumbar el chat, así que se valida al cargarlo.}
+\parte{Trazabilidad}{DRV-06, DRV-07. CD-19. ESC-04, ESC-11. CU-28 (RN-01). CON-09, CON-11, CON-05. CRN-04, CRN-25, CRN-16. STK-17, STK-19, STK-11.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-35 --- Normalización del texto antes de contrastar}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Táctica de protección: reducir la superficie de evasión.}
+\parte{Descripción}{Antes de contrastar contra el catálogo, el texto se normaliza: se unifican mayúsculas y acentos, se colapsan repeticiones y se traducen las sustituciones habituales de letras por números o símbolos. Atiende la parte de ESC-04 que exige detectar al menos el 95~\% de las variantes disfrazadas. Se elige frente a añadir cada variante al catálogo, que crece sin fin y nunca alcanza a quien improvisa una nueva.}
+\parte{Efectos}{Introduce el riesgo de bloquear frases normales, que la propia medida acota en menos del 2~\%, así que la normalización tiene que ser conservadora y medirse con las 500 frases limpias. Depende del idioma, lo que la ata al catálogo de CD-34 y a la iteración~7.}
+\parte{Trazabilidad}{DRV-06, DRV-07. CD-34. ESC-04. CU-28 (RN-01). CON-09, CON-05, CON-11. CRN-04. STK-02, STK-19, STK-11.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-36 --- El chat falla cerrado}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Táctica de protección: operación a prueba de fallos.}
+\parte{Descripción}{Si el filtro no responde o su catálogo no se puede cargar, el chat se suspende para esa partida con un aviso comprensible, en lugar de entregar sin filtrar. La partida sigue, y los jugadores conservan los emotes de CU-29 para comunicarse. Atiende la variante degradada de ESC-04, que es la parte que de verdad protege al menor. Se elige frente a dejar pasar los mensajes mientras el filtro se recupera, que convierte una falla técnica en el daño que CRN-04 quiere evitar.}
+\parte{Efectos}{Da al chat la misma forma de degradación que CD-30 dio a la partida ante la base de datos, así que el sistema responde igual ante terceros que fallan. El aviso tiene que entenderlo un niño de 8 años (CON-12). Una falla del filtro nunca detiene la partida.}
+\parte{Trazabilidad}{DRV-06, DRV-04. CD-30, CD-33. ESC-04. CU-28, CU-29. CON-09, CON-12. CRN-04, CRN-21. STK-02, STK-01, STK-17.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-37 --- Solo se conserva el contexto de lo reportado}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Táctica de protección: minimización de datos.}
+\parte{Descripción}{Los mensajes del chat se entregan y no se archivan; solo cuando alguien reporta, se conserva el contexto de los mensajes reportados, por un plazo corto y ligado al reporte. Atiende a la vez ESC-07, que exige 0 mensajes de conversaciones no reportadas, y la posibilidad de revisar una sanción que pide CU-43 y CU-45. Se elige frente a guardar todas las conversaciones, que da la mejor moderación posible y es justo lo que CRN-05 y la regulación sobre menores quieren evitar, y frente a no guardar nada, que dejaría toda sanción sin posibilidad de apelación.}
+\parte{Efectos}{Es la resolución de TEN-02 con el mínimo que ESC-07 fija, y deja abiertas Q-06 y Q-12 sin decidirlas: si se opta por revisión humana, lo que hay que ampliar es el plazo y el alcance de lo conservado, no la estructura. El contexto conservado entra en el camino confirmado de CD-28 y se liga a la cuenta por CD-09.}
+\parte{Trazabilidad}{DRV-06, DRV-04. CD-09, CD-28. ESC-07, ESC-04. CU-42, CU-43, CU-44, CU-45, CU-28 (paso 12). CON-10. CRN-05, CRN-18, CRN-04. TEN-02. Q-06, Q-11, Q-12. STK-17, STK-02, STK-12, STK-01.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-38 --- Defensas del propio jugador aplicadas en la entrega}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Táctica de protección: control del usuario sobre su exposición.}
+\parte{Descripción}{El servidor descarta como destinatario a quien haya bloqueado al autor y omite el mensaje a quien lo haya silenciado, tal como CU-28 describe en RN-06 y RN-07, y comprueba antes si el autor tiene una sanción de chat vigente (RN-05). Atiende ESC-04 desde el otro extremo: lo que el filtro no atrape, el propio jugador puede cortarlo. Se elige frente a filtrar en el cliente que recibe, que gastaría el viaje y dejaría el mensaje al alcance de un cliente alterado.}
+\parte{Efectos}{El servicio de chat necesita consultar bloqueos, silencios y sanciones antes de cada entrega, lo que las convierte en datos de lectura frecuente. Da a STK-02 una respuesta inmediata frente a un desconocido insistente, sin esperar a la moderación.}
+\parte{Trazabilidad}{DRV-06, DRV-01. CD-08, CD-33. ESC-04, ESC-07. CU-28 (RN-05, RN-06, RN-07), CU-33, CU-44. CON-09, CON-10. CRN-04, CRN-18. STK-01, STK-02, STK-17.}
+\end{tabla}

@@ -1,0 +1,68 @@
+% ============================================================
+\section{Método y estructura del documento}\label{sec:metodo}
+% ============================================================
+
+Este documento aplica los primeros cuatro pasos del método ADD a Bastion. Cada iteración toma un driver arquitectónico, revisa las entradas que le corresponden, fija un objetivo, elige qué elemento del sistema descompone y selecciona los conceptos de diseño con los que lo hará. No es un documento de decisiones tomadas de una vez: cada iteración deja constancia de por qué se eligió lo que se eligió y de qué queda pendiente para la siguiente.
+
+% ------------------------------------------------------------
+\subsection{Documentos de entrada}
+
+\begin{tabla}{|L{4.6cm}|Y|}
+\hline
+\filacab \cab{Documento} & \cab{Qué aporta a estas iteraciones} \\ \hline
+\endhead
+Análisis de contexto, escenarios de calidad y drivers &
+Objetivos de diseño, stakeholders (STK), concerns (CRN), dependencias (DEP), restricciones (CON) y requisitos impuestos (REQ), tensiones (TEN), preguntas abiertas (Q), características de calidad (QA), escenarios (ESC), requisitos arquitectónicamente significativos (ASR) y los ocho drivers (DRV). \\ \hline
+Casos de uso para Bastion, versión 1.0 &
+Los requisitos funcionales primarios (CU), con sus flujos, precondiciones, reglas de negocio (RN), mensajes del protocolo y entidades de datos. Es la fuente de lo que el sistema tiene que hacer, frente a los drivers, que dicen qué lo vuelve difícil. \\ \hline
+\end{tabla}
+
+Los identificadores se conservan tal como aparecen en esos documentos, de modo que cualquier afirmación de este texto se pueda rastrear hasta su origen sin repetirlo aquí.
+
+% ------------------------------------------------------------
+\subsection{Los cuatro pasos y las entradas del método}
+
+Las entradas del método son cinco: objetivos de diseño, requisitos funcionales primarios, escenarios de atributos de calidad, restricciones y concerns. Los cuatro pasos que cubre este documento son los siguientes.
+
+\begin{tabla}{|L{1.5cm}|L{4.0cm}|Y|}
+\hline
+\filacab \cab{Paso} & \cab{Nombre} & \cab{Qué produce en este documento} \\ \hline
+\endhead
+Paso 1 & Revisión de entradas &
+La lista de entradas que tienen algo que ver con el driver de la iteración, cada una con lo que exige. Se revisan todas; se listan las que aplican. \\ \hline
+Paso 2 & Establecer el objetivo de la iteración y seleccionar las entradas &
+Un objetivo único, enunciado en una frase, ligado al driver y alcanzable dentro de la iteración, con la medida que lo comprueba y el incremento que produce. Y la tabla que pesa cada entrada y dice cuáles se atienden ahora y cuáles se difieren, con el motivo. \\ \hline
+Paso 3 & Elegir uno o más elementos a descomponer &
+La ficha del único elemento elegido: qué abarca, por qué se eligió, qué falta decidir sobre él y su trazabilidad. La razón nunca es que sea un módulo del sistema, sino que la medida del objetivo depende de decisiones que todavía no se han tomado sobre él. \\ \hline
+Paso 4 & Elegir los conceptos de diseño que satisfacen las entradas &
+Los conceptos seleccionados, uno por ficha, con su estilo, qué atiende y por qué se eligió frente a las alternativas, sus efectos y su trazabilidad. \\ \hline
+\end{tabla}
+
+Los pasos 5 a 7 del método, instanciar los elementos, definir las interfaces y registrar el bosquejo con las decisiones, quedan fuera del alcance de este documento.
+
+% ------------------------------------------------------------
+\subsection{Estructura fija de cada iteración}\label{sec:metodo:plantilla}
+
+Todas las iteraciones tienen las mismas cinco subsecciones, en el mismo orden, y terminan en el paso~4. La estructura es fija a propósito: si una entrada cambia, si un escenario se mide de otra forma o si una pregunta abierta se resuelve, el cambio queda dentro de una subsección de una iteración y no obliga a reescribir el resto del documento.
+
+Cada iteración tiene además \textbf{un solo objetivo y un solo elemento a descomponer}, y termina en un incremento que se puede demostrar y medir. Un objetivo que necesita dos medidas distintas para comprobarse son en realidad dos objetivos, y se parten en dos iteraciones; un driver grande ocupa entonces más de una, en el orden que fija la sección~\ref{sec:priorizacion}. Lo que se deja fuera no se pierde: se nombra la iteración que lo recoge.
+
+\begin{tabla}{|L{4.6cm}|Y|}
+\hline
+\filacab \cab{Subsección} & \cab{Contenido} \\ \hline
+\endhead
+Driver y alcance & El driver que cubre la iteración, por qué le toca ese turno, y qué decide y qué no decide la iteración. \\ \hline
+Paso 1. Revisión de entradas & Las cinco entradas del método, filtradas por el driver, con las decisiones de proyecto ya tomadas y las preguntas abiertas que las condicionan. \\ \hline
+Paso 2. Objetivo de la iteración y selección de entradas & El objetivo de la iteración y la tabla de priorización de entradas. \\ \hline
+Paso 3. Elemento a descomponer & Una ficha con el elemento elegido: qué abarca, por qué se eligió, qué falta decidir y su trazabilidad. \\ \hline
+Paso 4. Conceptos de diseño & Una ficha por concepto seleccionado: estilo, descripción, efectos y trazabilidad. \\ \hline
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Convenciones}
+
+\begin{itemize}
+  \item \textbf{Peso de una entrada.} Alto, medio o bajo. Alto significa que la entrada decide la estructura del elemento elegido: hay alternativas que la cumplen y otras que no. Medio, que la condiciona sin decidirla. Bajo, que se cumple dentro de cualquier alternativa razonable.
+  \item \textbf{Entrada diferida.} No se descarta: se atiende en una iteración posterior, que se nombra en el momento de diferirla.
+  \item \textbf{Concepto de diseño.} Estilo, patrón o táctica. Se nombra por lo que hace y no por una tecnología concreta; la elección de producto o biblioteca no pertenece a estos pasos.
+\end{itemize}

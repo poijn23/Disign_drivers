@@ -1,0 +1,37 @@
+% !TEX program = xelatex
+% ============================================================
+%  Diseño arquitectónico por iteraciones (ADD, pasos 1 a 4)
+%  Una iteración por driver arquitectónico.
+%  Compilar con XeLaTeX o LuaLaTeX (usa fontspec):
+%      latexmk main.tex        (usa .latexmkrc -> xelatex)
+%      xelatex main.tex
+% ============================================================
+\documentclass[11pt]{article}
+
+\input{preambulo}
+
+\begin{document}
+
+\input{secciones/00_portada}
+
+\pagenumbering{roman}
+\tableofcontents
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% --- Método y priorización ---
+\input{secciones/01_metodo}
+\input{secciones/02_priorizacion}
+
+% --- Iteraciones (la primera de cada driver, en el orden de la sección 2) ---
+\input{secciones/iteraciones/it01}
+\input{secciones/iteraciones/it02}
+\input{secciones/iteraciones/it03}
+\input{secciones/iteraciones/it04}
+\input{secciones/iteraciones/it05}
+\input{secciones/iteraciones/it06}
+\input{secciones/iteraciones/it07}
+\input{secciones/iteraciones/it08}
+
+\end{document}

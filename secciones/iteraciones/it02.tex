@@ -1,0 +1,241 @@
+% ============================================================
+\section{Iteración 2 --- DRV-02: protocolo propio sobre TCP}\label{sec:it02}
+% ============================================================
+
+% ------------------------------------------------------------
+\subsection{Driver y alcance}
+
+\begin{tabla}{|L{3.0cm}|Y|}
+\fichacab
+\parte{Driver}{DRV-02 --- Protocolo propio sobre TCP.}
+\parte{Enunciado}{Sin WebSockets, el protocolo es un componente que el equipo diseña y que resuelve por sí mismo la delimitación, el versionado, la validación, la detección de actividad y el cifrado, con un costo por mensaje compatible con el segundo de DRV-03.}
+\parte{Por qué le toca este turno}{Es el segundo en la calificación de la sección~\ref{sec:priorizacion}, con 13 de 15. Su costo de cambio tardío es máximo: el formato y el apretón de manos viven en los dos extremos, así que cambiarlos después obliga a redesplegar todos los clientes. Y la iteración~1 ya dejó el estado con dueño, que es lo que el protocolo necesita saber para transportar propuestas y decisiones.}
+\parte{Qué decide esta iteración}{Cómo viaja un mensaje entre cliente y servidor de modo que quien capture el tráfico no pueda leerlo ni reutilizarlo. Nada más: es el único objetivo del paso~2 y se comprueba con la medida de ESC-06.}
+\parte{Decisiones ya tomadas}{DEC-01 a DEC-03, y lo decidido en la iteración~1: el servidor es la autoridad (CD-01), toda la lógica vive en él (CD-02), el servidor está partido en servicios y uno de ellos es el de protocolo (CD-03), y la entrada se valida antes de llegar al motor (CD-07), con autenticación por mensaje (CD-08) y registro de los intentos (CD-09).}
+\parte{Qué no decide}{La detección de la desconexión y la reasociación de sesión (ESC-08), que necesitan además la sesión de partida y se deciden en una iteración posterior; esta iteración solo se obliga a dejarles sitio en el apretón de manos. Tampoco decide el motor de reglas (iteración~3), el reparto del segundo (iteración~4) ni la persistencia (iteración~5).}
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 1. Revisión de entradas}
+
+\subsubsection*{Objetivos de diseño}
+
+\begin{tabla}{|L{1.5cm}|L{5.0cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Objetivo} & \cab{Origen y qué exige aquí} \\ \hline
+\endhead
+OBJ-05 & Lo que el jugador escribe y lo que acredita su identidad no se puede leer desde la red. &
+CRN-22, con STK-15. Obliga a que la protección forme parte del transporte y no sea un añadido posterior. \\ \hline
+OBJ-06 & Nadie puede hacerse pasar por un jugador reutilizando lo que capturó. &
+CRN-22 y CON-08. El segundo factor no sirve de nada si el resultado de haberlo superado se puede copiar. \\ \hline
+OBJ-07 & Se guarda del menor lo mínimo y lo que se guarda no queda expuesto. &
+CRN-05, con STK-02 y STK-17. El chat de partida lleva datos personales de menores. \\ \hline
+OBJ-04 & Cada semana hay un incremento funcional y demostrable dentro de las 14 semanas. &
+CON-13 y CON-14. El protocolo tiene que poder construirse y probarse por partes. \\ \hline
+\end{tabla}
+
+\subsubsection*{Requisitos funcionales primarios}
+
+\begin{tabla}{|L{1.3cm}|L{4.2cm}|Y|}
+\hline
+\filacab \cab{CU} & \cab{Caso de uso} & \cab{Qué exige del transporte} \\ \hline
+\endhead
+CU-01 & Iniciar sesión &
+Por el canal viajan el identificador, la contraseña y el código del segundo factor, y vuelve un token de sesión que es lo que después acredita al jugador. \\ \hline
+CU-20, CU-21 & Mover el peón; colocar un muro &
+Cada jugada lleva el token de sesión y el número de jugada. Un tercero que los capture no debe poder repetirlos ni fabricarlos. \\ \hline
+CU-28 & Enviar un mensaje de chat &
+CHAT\_SEND\_REQUEST lleva texto escrito por menores de edad, que no puede quedar legible en la red. \\ \hline
+CU-10 & Gestionar sesiones activas &
+Exige que una sesión se pueda identificar y cerrar, lo que solo tiene sentido si el token no es copiable. \\ \hline
+CU-02, CU-09 & Registrar cuenta; cambiar contraseña o correo &
+Llevan credenciales nuevas por el mismo canal, con el mismo riesgo. \\ \hline
+\end{tabla}
+
+\subsubsection*{Escenarios de atributos de calidad}
+
+\begin{tabla}{|L{1.7cm}|L{3.3cm}|Y|}
+\hline
+\filacab \cab{Escenario} & \cab{Atributo} & \cab{Medida} \\ \hline
+\endhead
+ESC-06 \newline (ASR-03) & Seguridad: confidencialidad y autenticidad &
+En la captura de una sesión completa en una red compartida: 0 contraseñas, 0 códigos, 0 identificadores de sesión y 0 mensajes de chat legibles; el servidor rechaza el 100~\% de 50 reenvíos. \\ \hline
+ESC-05 \newline (ASR-02) & Seguridad: integridad &
+Ya cubierta por la iteración~1. Aquí actúa como condición: los 50 mensajes al azar de su batería atacan al protocolo, que debe rechazarlos sin llegar al arbitraje. \\ \hline
+ESC-01 \newline (ASR-01) & Desempeño &
+Límite. La protección cuesta por mensaje y ese costo se mide en la iteración~4; ninguna decisión de aquí puede volver imposible el segundo. \\ \hline
+ESC-08 \newline (ASR-04) & Fiabilidad &
+No se atiende aquí, pero condiciona: el apretón de manos debe admitir que una sesión existente se reasocie a una conexión nueva. \\ \hline
+\end{tabla}
+
+\subsubsection*{Restricciones}
+
+\begin{tabla}{|L{1.9cm}|L{4.3cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Restricción} & \cab{Cómo limita esta iteración} \\ \hline
+\endhead
+CON-02 & La comunicación es por TCP & Hay un flujo de bytes ordenado, sin noción de mensaje: la delimitación es responsabilidad del equipo. \\ \hline
+CON-03 & Está prohibido usar WebSockets & Elimina el apretón de manos, la delimitación y la protección que ese protocolo trae hechos. Es el origen del driver. \\ \hline
+CON-08 & Debe existir un segundo factor de autenticación & Lo que se protege no es solo la contraseña: también el código y el token que resulta de validarlo. \\ \hline
+CON-01, CON-16 & C\# sobre .NET & La plataforma ofrece un canal seguro estándar sobre sockets, lo que evita escribir criptografía propia. \\ \hline
+CON-13, CON-14 & 14 semanas e incrementos auditables & Descartan diseñar un mecanismo de cifrado propio: no hay tiempo ni forma de auditarlo. \\ \hline
+\end{tabla}
+
+\subsubsection*{Decisiones de proyecto ya tomadas}
+
+\begin{tabla}{|L{1.5cm}|L{4.3cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Decisión} & \cab{Qué impone a esta iteración} \\ \hline
+\endhead
+DEC-01, DEC-02 & Cliente-servidor basado en servicios, sin lógica en el cliente & El protocolo transporta propuestas y decisiones, no estados calculados por el cliente. El servicio de protocolo es una pieza con frontera propia (CD-03). \\ \hline
+DEC-03 & La partida en línea exige base de datos & Las credenciales y los tokens se comprueban contra datos persistidos, así que el canal también transporta esa comprobación. \\ \hline
+CD-11 & El servidor entrega las jugadas legales junto con el turno & El mensaje de turno es el más grande del protocolo, y su tamaño es lo que más pesa en el costo por mensaje. \\ \hline
+\end{tabla}
+
+\subsubsection*{Concerns}
+
+\begin{tabla}{|L{1.5cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Concern y qué aporta a la iteración} \\ \hline
+\endhead
+CRN-22 & \emph{El transporte es TCP en claro. Si no ciframos, cualquiera en la misma red puede leer las credenciales y secuestrar la sesión de un jugador.} Es el concern que da origen al objetivo. \\ \hline
+CRN-11 & Sin WebSockets hay que definir dónde empieza y termina cada mensaje, cómo se serializa y qué hacer cuando cliente y servidor no tienen la misma versión. \\ \hline
+CRN-05 & El tutor no quiere dar más datos del menor de los imprescindibles; lo que viaja por el canal incluye su chat. \\ \hline
+CRN-02 & El jugador espera respuesta inmediata: cada capa que se añade al mensaje se paga en el turno. \\ \hline
+\end{tabla}
+
+\subsubsection*{Preguntas abiertas que condicionan la iteración}
+
+\begin{tabla}{|L{1.3cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Cómo condiciona} \\ \hline
+\endhead
+Q-09 & Con qué mecanismo se cifra el tráfico. ASR-03 ya resolvió que sí se cifra; esta iteración responde el cómo y cierra la pregunta. \\ \hline
+Q-03 & El mecanismo del segundo factor. No cambia el transporte, pero sí lo que viaja durante el acceso, así que el formato debe admitir mensajes nuevos sin cambiar de versión. \\ \hline
+Q-02 & La conexión LAN. Obliga a que la dirección y el puerto del servidor se lean de configuración, no del código. \\ \hline
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 2. Objetivo de la iteración y selección de entradas}
+
+\subsubsection*{Priorización de las entradas}
+
+\begin{tabla}{|L{3.2cm}|L{1.3cm}|Y|L{2.2cm}|}
+\hline
+\filacab \cab{Entrada} & \cab{Peso} & \cab{Por qué pesa lo que pesa} & \cab{Decisión} \\ \hline
+\endhead
+ESC-06 (ASR-03) & Alto & Es la medida del objetivo y decide dónde vive la protección: sobre la conexión completa o dentro de cada mensaje. Las dos opciones cambian el formato en los dos extremos. & Se atiende \\ \hline
+CRN-11 & Alto & La delimitación y el versionado son la base sobre la que todo lo demás se apoya, y sin ellos no hay mensajes que proteger. & Se atiende \\ \hline
+CU-01 & Alto & Es el caso donde viajan las credenciales y donde nace el token: es el que la medida captura. & Se atiende \\ \hline
+CON-02, CON-03 & Alto & Definen el punto de partida: un flujo de bytes sin nada hecho. & Se atiende \\ \hline
+Q-09 & Alto & La iteración existe en parte para cerrarla. & Se atiende \\ \hline
+CU-20, CU-21, CU-28 & Medio & Aportan el resto del tráfico que la captura recoge y el tamaño típico de los mensajes. & Se atiende \\ \hline
+ESC-05 & Medio & Ya está cubierta; aquí solo se comprueba que el protocolo no la rompa al filtrar mensajes mal formados antes del arbitraje. & Se atiende como condición \\ \hline
+ESC-01 & Medio, como límite & El costo por mensaje se mide en la iteración~4; aquí basta con no elegir algo que lo vuelva imposible. & Se atiende como restricción \\ \hline
+ESC-08 & Bajo aquí & Solo impone que el apretón de manos deje sitio a la reasociación. & Se difiere a una iteración posterior \\ \hline
+CON-01, CON-16 & Bajo & No eligen entre alternativas, pero abaratan una: la plataforma ya trae un canal seguro probado. & Se atiende como supuesto \\ \hline
+\end{tabla}
+
+\subsubsection*{Objetivo de la iteración}
+
+\begin{tabla}{|L{3.0cm}|Y|}
+\fichacab
+\parte{Objetivo}{Que el tráfico entre cliente y servidor no revele nada legible a quien lo capture ni sirva para hacerse pasar por un jugador.}
+\parte{Driver que cubre}{DRV-02, en lo que hace a la confidencialidad y a la autenticidad del canal.}
+\parte{Medida}{La de ESC-06: en la captura de una sesión completa en una red compartida, 0 contraseñas, 0 códigos de segundo factor, 0 identificadores de sesión y 0 mensajes de chat legibles; el servidor rechaza el 100~\% de 50 intentos de reenviar lo capturado.}
+\parte{Límite que respeta}{ESC-01 y ESC-05. La protección cuesta por mensaje, y el arbitraje de la iteración~1 debe seguir rechazando todo lo inválido.}
+\parte{Incremento que produce}{La partida de la iteración~1 sigue funcionando, ahora sobre un canal protegido: se puede capturar el tráfico de un inicio de sesión y de una partida completa con un analizador de red y mostrar que no aparece nada legible, y que reenviar lo capturado no abre sesión ni mueve una ficha.}
+\parte{Criterio de éxito}{La iteración termina cuando esa captura no encuentra nada legible y los 50 reenvíos se rechazan, sin que la partida deje de funcionar.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 3. Elemento a descomponer}
+
+% ------------------------------------------------------------
+\Needspace*{0.4\textheight}
+\subsubsection*{EL-02 --- Servicio de protocolo}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Elemento}{El servicio de protocolo: la pieza del servidor, con su contraparte en el cliente, que convierte un flujo de bytes de TCP en mensajes con significado y de vuelta.}
+\parte{Qué abarca}{El establecimiento del canal, la delimitación de cada mensaje dentro del flujo, su serialización, la versión del protocolo, la protección del contenido y el rechazo de lo que no cumpla el formato. Es lo que atraviesa todo mensaje de CU-01, CU-20, CU-21 y CU-28 antes de llegar a cualquier otro servicio.}
+\parte{Por qué se elige}{Porque la medida del objetivo depende por completo de él: lo que un tercero captura es exactamente lo que este servicio pone en el socket. Se elige frente a descomponer el módulo de cuentas, que es donde nacen las credenciales pero no donde viajan, y frente al servicio de estado de la partida, que ya tiene su iteración y que recibe los mensajes cuando el problema de la captura ya ocurrió.}
+\parte{Qué falta decidir sobre él}{Dónde vive la protección: sobre la conexión completa o dentro de cada mensaje. Cómo se delimita un mensaje en un flujo que no los distingue. Qué ocurre cuando el cliente habla una versión distinta de la del servidor. Y qué hace que un mensaje capturado no se pueda reenviar con efecto.}
+\parte{Evidencia en los casos de uso}{CU-01 envía el identificador, la contraseña y el código del segundo factor y recibe un token que después acredita cada mensaje. CU-20 y CU-21 mandan ese token en cada jugada (paso 7 de CU-21). CU-28 manda texto de menores en CHAT\_SEND\_REQUEST. Los tres describen mensajes con nombre y campos, pero ninguno dice cómo se separan en el flujo ni cómo se protegen: eso es justo lo que falta.}
+\parte{Trazabilidad}{DRV-02. DEC-01, DEC-02. CD-03, CD-07, CD-08. ESC-06 (ASR-03), con ESC-05 y ESC-01 como límites. CU-01, CU-02, CU-09, CU-10, CU-20, CU-21, CU-28. CON-02, CON-03, CON-08. CRN-22, CRN-11, CRN-05. Q-09. STK-15, STK-05, STK-02.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 4. Conceptos de diseño}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-12 --- Canal seguro estándar sobre el socket}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Táctica de seguridad: cifrar los datos en tránsito.}
+\parte{Descripción}{La conexión TCP se envuelve en un canal seguro estándar de la plataforma antes de enviar el primer mensaje del protocolo. Atiende ESC-06 en su parte principal: lo que se captura son bytes cifrados, sin importar qué mensaje sea. Se elige frente a cifrar mensaje por mensaje dentro del protocolo, que obligaría a diseñar el manejo de claves a mano, y frente a cifrar solo las credenciales, que dejaría en claro el chat de menores (CRN-05) y el token de cada jugada. Con esto se cierra Q-09.}
+\parte{Efectos}{El protocolo trabaja siempre sobre un canal ya protegido, así que la delimitación y el versionado no tienen que preocuparse por la confidencialidad. Agrega un costo por conexión, en el establecimiento, y otro por mensaje, que se mide en la iteración~4. Obliga a gestionar el certificado del servidor y a que el cliente lo verifique.}
+\parte{Trazabilidad}{DRV-02. ESC-06 (ASR-03), ESC-01. CU-01, CU-20, CU-21, CU-28. CON-02, CON-03, CON-01, CON-16. CRN-22, CRN-05. Q-09. STK-15, STK-02.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-13 --- Delimitación por longitud con tamaño máximo}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Patrón de protocolo, con táctica de seguridad: limitar la exposición.}
+\parte{Descripción}{Cada mensaje viaja precedido de su longitud, y el servicio rechaza cualquiera que declare más del máximo permitido. Atiende CRN-11, que es lo que CON-03 dejó sin resolver, y contribuye a ESC-05 porque un mensaje truncado o con longitud imposible se descarta antes de interpretarse. Se elige frente a delimitar con un carácter separador, que obliga a escapar el contenido y se rompe con texto de chat en otros idiomas.}
+\parte{Efectos}{El servicio puede leer mensajes completos sin adivinar dónde terminan. El tamaño máximo protege la memoria del servidor frente a un cliente que declare un mensaje enorme, y fija un tope al mensaje de turno de CD-11. Obliga a decidir ese máximo antes de construir, porque es parte del formato.}
+\parte{Trazabilidad}{DRV-02. CD-07, CD-11. ESC-05, ESC-06. CU-20, CU-21, CU-28. CON-02, CON-03. CRN-11, CRN-23. STK-05, STK-15.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-14 --- Cabecera con versión y rechazo explícito de versiones incompatibles}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Patrón de protocolo.}
+\parte{Descripción}{Cada mensaje lleva en su cabecera la versión del protocolo y su tipo. Si la versión no es compatible, el servidor responde con un mensaje de versión no soportada y cierra, en lugar de intentar interpretar el contenido. Atiende CRN-11 y la parte de ESC-05 que envía mensajes de una versión anterior. Se elige frente a deducir la versión del contenido, que es justo lo que un cliente alterado puede manipular.}
+\parte{Efectos}{Permite desplegar clientes y servidor en momentos distintos durante las 14 semanas, siempre que el cambio de versión sea explícito. Obliga a llevar la cuenta de qué versión entiende cada cliente y a decidir, en cada cambio, si se acepta la anterior. El campo de versión ocupa espacio en todos los mensajes.}
+\parte{Trazabilidad}{DRV-02, DRV-08. CD-07. ESC-05, ESC-06. CU-20, CU-21. CON-03, CON-13, CON-14. CRN-11. STK-05, STK-07.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-15 --- Apretón de manos con identificación de sesión y sitio para reasociar}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Patrón de protocolo, con táctica de seguridad: autenticar actores.}
+\parte{Descripción}{Al abrir el canal, cliente y servidor acuerdan la versión y el cliente presenta su token de sesión, si ya tiene uno. El mensaje de apertura admite desde ahora un identificador de sesión existente, aunque lo que se haga con él, reasociar una partida en curso, se decida en una iteración posterior. Atiende ESC-06 en la parte de autenticidad y prepara ESC-08. Se elige frente a un apretón de manos mínimo que solo acuerde la versión, que obligaría a cambiarlo después y a redesplegar todos los clientes.}
+\parte{Efectos}{Todo lo que llega después del apretón de manos pertenece a una sesión conocida, lo que permite a CD-08 autorizar cada mensaje sin repetir la identificación. Deja preparado el camino de ESC-08 sin implementarlo. Agrega un viaje de ida y vuelta al abrir la conexión, que no está dentro del turno y no afecta a ESC-01.}
+\parte{Trazabilidad}{DRV-02, DRV-01. CD-08. ESC-06, ESC-08. CU-01, CU-10, CU-26. CON-03, CON-08. CRN-22, CRN-06. Q-03. STK-15, STK-05.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-16 --- Sesiones que no se pueden reutilizar}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Táctica de seguridad: resistir ataques de repetición.}
+\parte{Descripción}{El token de sesión vale solo dentro del canal en el que se estableció, tiene vencimiento y va acompañado de un número de mensaje creciente, de modo que un mensaje repetido se reconoce y se descarta. Atiende la segunda mitad de la medida de ESC-06, los 50 reenvíos rechazados. Se elige frente a confiar solo en el cifrado, que impide leer pero no impide repetir lo capturado desde el mismo equipo.}
+\parte{Efectos}{Obliga al servicio de estado a llevar el último número de mensaje visto por sesión, que encaja con el número de jugada que CU-20 y CU-21 ya usan. Un jugador que reconecta necesita un token válido, lo que se articula con CD-15. Los reenvíos rechazados se registran con CD-09.}
+\parte{Trazabilidad}{DRV-02, DRV-01. CD-08, CD-09, CD-15. ESC-06, ESC-05. CU-01, CU-10, CU-20, CU-21 (FA-07). CON-08. CRN-22, CRN-23. STK-15.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-17 --- Serialización con esquema fijo por tipo de mensaje}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Patrón de protocolo.}
+\parte{Descripción}{Cada tipo de mensaje tiene un esquema declarado, con sus campos y sus tipos, y el servicio rechaza lo que no encaje antes de entregarlo a cualquier otro servicio. Atiende ESC-05 en la parte de los mensajes mal formados y hace posible CD-07 sin repartir comprobaciones por todo el servidor. Se elige frente a una serialización libre en la que cada componente interprete lo que reciba, que dejaría la validación a criterio de quien la escriba.}
+\parte{Efectos}{Los nombres de mensaje que los casos de uso ya usan, como PLACE\_WALL\_REQUEST o CHAT\_SEND\_REQUEST, se convierten en esquemas versionados. El texto viaja en Unicode, lo que la iteración~7 necesita. Añadir un campo obliga a pasar por el versionado de CD-14.}
+\parte{Trazabilidad}{DRV-02, DRV-07. CD-07, CD-13, CD-14. ESC-05, ESC-06, ESC-11. CU-20, CU-21, CU-28. CON-03, CON-05. CRN-11, CRN-16. STK-05, STK-11.}
+\end{tabla}
