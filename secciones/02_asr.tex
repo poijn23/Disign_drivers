@@ -2,12 +2,12 @@
 \section{ASR}\label{sec:asr}
 % ============================================================
 
-Un requisito arquitectónicamente significativo (ASR) es un requisito cuya satisfacción tiene un efecto profundo sobre la arquitectura del sistema, de manera que la arquitectura podría ser diferente si ese requisito no existiera. Esta sección identifica los ASR de Bastion, dice de dónde procede cada uno y los prioriza. Es la primera sección de diseño del documento y se construye solo a partir de los documentos de entrada: las secciones que siguen parten de ella, y ninguna de ellas la condiciona.
+Un requisito arquitectónicamente significativo (ASR) es un requisito cuya satisfacción tiene un efecto profundo sobre la arquitectura del sistema, de manera que la arquitectura podría ser diferente si ese requisito no existiera. Esta sección identifica los ASR de Bastion, dice de dónde procede cada uno y los prioriza. Se construye solo a partir de los documentos de entrada.
 
 % ------------------------------------------------------------
 \subsection{Cómo se identifican}
 
-\textbf{La prueba.} A cada requisito candidato se le hace la misma pregunta: \emph{¿la ausencia de este requisito podría llevarnos a diseñar una arquitectura significativamente diferente?} Si la respuesta es sí, se nombran las decisiones que obliga a tomar. Es el mismo razonamiento del ejemplo de clase: recuperar una partida después de una falla del servidor en un máximo de 60 segundos es ASR porque obliga a decidir la persistencia del estado de la partida, cómo detectar el fallo, los mecanismos de recuperación, el despliegue y la sincronización. Si la respuesta es no, el requisito sigue siendo obligatorio, pero se cumple dentro de cualquier arquitectura razonable y no sirve para elegir entre ellas.
+\textbf{La prueba.} A cada requisito candidato se le hace la misma pregunta: \emph{¿la ausencia de este requisito podría llevarnos a diseñar una arquitectura significativamente diferente?} Si la respuesta es sí, se nombran las decisiones que obliga a tomar. Por ejemplo, recuperar una partida después de una falla del servidor en un máximo de 60 segundos es ASR porque obliga a decidir la persistencia del estado de la partida, cómo detectar el fallo, los mecanismos de recuperación, el despliegue y la sincronización. Si la respuesta es no, el requisito sigue siendo obligatorio, pero se cumple dentro de cualquier arquitectura razonable y no sirve para elegir entre ellas.
 
 \textbf{Las fuentes.} La prueba se aplica a los candidatos de las tres fuentes de las que puede surgir un ASR, sin olvidar los objetivos de negocio, los stakeholders, los concerns y las dependencias externas que las respaldan.
 
@@ -30,30 +30,28 @@ Los objetivos de negocio (juego en línea, público de 8 años en adelante, dist
 
 Al aplicar la prueba a las tres fuentes se encontraron quince ASR: catorce activos y uno reservado. La tabla los reúne todos, con lo que la arquitectura debe cumplir, su procedencia y los elementos del análisis de los que vienen. El orden de la tabla es el de su numeración; el orden de importancia se establece en la subsección~\ref{sec:asr:prioridad}.
 
-\textbf{La numeración.} ASR-01 a ASR-06 conservan el significado que tienen en el documento de contexto, donde solo se reconocían como ASR los escenarios (A, A). ASR-07 sigue reservado para el modo LAN (ESC-14) si Q-02 se resuelve a favor. Los ASR que aparecen al aplicar las otras dos fuentes empiezan en ASR-08.
-
 \begin{tabla}{|L{1.3cm}|Y|L{2.4cm}|L{4.3cm}|}
 \hline
 \filacab \cab{ASR} & \cab{Qué debe cumplir la arquitectura} & \cab{Procedencia} & \cab{Viene de} \\ \hline
 \endhead
-ASR-01 & Una jugada en línea se responde en menos de 1 segundo, con mediana bajo 300 ms, con el servidor decidiendo y el tráfico cifrado. & Escenario, Restricción & ESC-01; REQ-02; CRN-02; STK-01, STK-09; DEP-04. \\ \hline
-ASR-02 & Un cliente alterado no puede cambiar el estado de una partida ni obtener datos de otro jugador. & Escenario & ESC-05; CRN-10, CRN-23; STK-15, STK-10, STK-05. \\ \hline
-ASR-03 & El tráfico capturado no revela credenciales, códigos, sesiones ni chat, y no se puede reutilizar. & Escenario, Restricción & ESC-06; REQ-03, CON-02, CON-03; CRN-22, CRN-05; STK-15, STK-02; DEP-02. \\ \hline
-ASR-04 & Una desconexión no ordenada no deja la partida indefinida: se detecta en menos de 15 segundos y el jugador retoma en menos de 5 si vuelve antes de 2 minutos, incluso desde otro dispositivo. & Escenario, Funcionalidad & ESC-08; CU-26, CU-24; CON-17; CRN-06; STK-01, STK-14; DEP-04. \\ \hline
-ASR-05 & Una caída de SQL Server pierde como máximo 5 segundos de jugadas y ningún dato confirmado, y deja constancia de lo perdido. & Escenario, Restricción & ESC-09; CON-04; CU-25; CRN-19; STK-13, STK-14; DEP-03, DEP-04. \\ \hline
-ASR-06 & Las reglas cambian sin tocar código y una partida completa se reproduce sin interfaz. & Escenario & ESC-12, ESC-17; CON-15; CRN-13, CRN-17; STK-06, STK-10. \\ \hline
-ASR-07 & Reservado: partidas en red local con el modo en línea ya entregado. & Escenario, condicionado a Q-02 & ESC-14; Q-02; CRN-20; STK-14. \\ \hline
+ASR-01 & Una jugada en línea se responde en menos de 1 segundo, con mediana bajo 300 ms, con el servidor decidiendo y el tráfico cifrado. & Escenario, Restricción & QAS-01; REQ-02; CRN-02; STK-01, STK-09; DEP-04. \\ \hline
+ASR-02 & Un cliente alterado no puede cambiar el estado de una partida ni obtener datos de otro jugador. & Escenario & QAS-05; CRN-10, CRN-23; STK-15, STK-10, STK-05. \\ \hline
+ASR-03 & El tráfico capturado no revela credenciales, códigos, sesiones ni chat, y no se puede reutilizar. & Escenario, Restricción & QAS-06; REQ-03, CON-02, CON-03; CRN-22, CRN-05; STK-15, STK-02; DEP-02. \\ \hline
+ASR-04 & Una desconexión no ordenada no deja la partida indefinida: se detecta en menos de 15 segundos y el jugador retoma en menos de 5 si vuelve antes de 2 minutos, incluso desde otro dispositivo. & Escenario, Funcionalidad & QAS-08; CU-26, CU-24; CON-17; CRN-06; STK-01, STK-14; DEP-04. \\ \hline
+ASR-05 & Una caída de SQL Server pierde como máximo 5 segundos de jugadas y ningún dato confirmado, y deja constancia de lo perdido. & Escenario, Restricción & QAS-09; CON-04; CU-25; CRN-19; STK-13, STK-14; DEP-03, DEP-04. \\ \hline
+ASR-06 & Las reglas cambian sin tocar código y una partida completa se reproduce sin interfaz. & Escenario & QAS-12, QAS-17; CON-15; CRN-13, CRN-17; STK-06, STK-10. \\ \hline
+ASR-07 & Reservado: partidas en red local con el modo en línea ya entregado. & Escenario, condicionado a Q-02 & QAS-14; Q-02; CRN-20; STK-14. \\ \hline
 ASR-08 & Dos o más jugadores juegan partidas completas en línea, creadas por emparejamiento o por sala, con turnos y relojes arbitrados por un servidor. & Funcionalidad, Restricción & REQ-01; CU-17, CU-18, CU-19, CU-20, CU-21, CU-25; objetivo de juego en línea; STK-03, STK-01. \\ \hline
 ASR-09 & Una partida en curso se puede observar, incluso sin cuenta, recibiendo el estado con retraso y sin frenar a los jugadores. & Funcionalidad & CU-34, CU-12 (permite\_espectadores), CU-21 (paso 20); CRN-02; STK-01. \\ \hline
 ASR-10 & Un jugador se enfrenta a un rival controlado por el servidor, con niveles y sugerencias, dentro del mismo presupuesto por jugada. & Funcionalidad & CU-27; Q-01; CRN-03, CRN-14; STK-06, STK-04. \\ \hline
-ASR-11 & Todo mensaje de chat pasa por un filtro en el servidor que falla cerrado, y cada reporte y sanción deja un rastro revisable sin guardar conversaciones no reportadas. & Funcionalidad, Restricción, Escenario & CU-28, CU-33, CU-42 a CU-45; REQ-04, REQ-05; ESC-04, ESC-07; CRN-04, CRN-05, CRN-18; STK-02, STK-17, STK-19. \\ \hline
-ASR-12 & El acceso exige segundo factor y un niño de 8 años lo completa solo o con su tutor. & Restricción, Escenario & REQ-03, REQ-07; ESC-03; CU-01, CU-04; CRN-01, CRN-26; TEN-03; STK-15, STK-02; DEP-01, DEP-02. \\ \hline
-ASR-13 & Todo texto y formato se adapta a otro idioma sin tocar código, y el texto viaja en Unicode desde la pantalla hasta la base de datos. & Restricción, Escenario & REQ-06, CON-05, CON-04; ESC-11; CU-12; objetivo de distribución internacional; CRN-15, CRN-16; STK-11. \\ \hline
+ASR-11 & Todo mensaje de chat pasa por un filtro en el servidor que falla cerrado, y cada reporte y sanción deja un rastro revisable sin guardar conversaciones no reportadas. & Funcionalidad, Restricción, Escenario & CU-28, CU-33, CU-42 a CU-45; REQ-04, REQ-05; QAS-04, QAS-07; CRN-04, CRN-05, CRN-18; STK-02, STK-17, STK-19. \\ \hline
+ASR-12 & El acceso exige segundo factor y un niño de 8 años lo completa solo o con su tutor. & Restricción, Escenario & REQ-03, REQ-07; QAS-03; CU-01, CU-04; CRN-01, CRN-26; TEN-03; STK-15, STK-02; DEP-01, DEP-02. \\ \hline
+ASR-13 & Todo texto y formato se adapta a otro idioma sin tocar código, y el texto viaja en Unicode desde la pantalla hasta la base de datos. & Restricción, Escenario & REQ-06, CON-05, CON-04; QAS-11; CU-12; objetivo de distribución internacional; CRN-15, CRN-16; STK-11. \\ \hline
 ASR-14 & La solución usa solo C\# sobre .NET, SQL Server como almacenamiento y TCP sin WebSockets. & Restricción & CON-01, CON-02, CON-03, CON-04, CON-16, CON-17; tecnología asignada por el cliente (STK-03). \\ \hline
-ASR-15 & La solución se construye en 14 semanas, con un incremento auditable cada semana, por un equipo de dos personas, y lo que no es esencial se puede recortar sin tocar lo esencial. & Restricción, Escenario & CON-13, CON-14; ESC-13, ESC-17; equipo de dos personas; CRN-07, CRN-08, CRN-14; STK-03, STK-04, STK-16. \\ \hline
+ASR-15 & La solución se construye en 14 semanas, con un incremento auditable cada semana, por un equipo de dos personas, y lo que no es esencial se puede recortar sin tocar lo esencial. & Restricción, Escenario & CON-13, CON-14; QAS-13, QAS-17; equipo de dos personas; CRN-07, CRN-08, CRN-14; STK-03, STK-04, STK-16. \\ \hline
 \end{tabla}
 
-\textbf{Qué muestra la procedencia.} Once ASR se apoyan en al menos un escenario, nueve en una restricción y cinco en una funcionalidad, y nueve combinan más de una fuente. Con el criterio del documento de contexto, que solo reconocía como ASR los escenarios (A, A), habrían quedado fuera los ocho que empiezan en ASR-08: cuatro no tienen ningún escenario detrás (ASR-08, ASR-09, ASR-10 y ASR-14), y los otros cuatro tienen escenarios que no llegaban a (A, A), pero los respalda una restricción o un requisito impuesto (ASR-11, ASR-12, ASR-13 y ASR-15).
+\textbf{Qué muestra la procedencia.} Once ASR se apoyan en al menos un escenario, nueve en una restricción y cinco en una funcionalidad, y nueve combinan más de una fuente.
 
 % ------------------------------------------------------------
 \subsection{Por qué cada uno es ASR}
@@ -74,7 +72,7 @@ ASR-03 &
 Dónde vive el cifrado, sobre la conexión o mensaje por mensaje; cómo se gestionan certificados y claves; cómo es el apretón de manos; y cómo se impide reutilizar un token capturado. &
 Hacer viajar el protocolo propio en claro, sin apretón de manos ni vencimiento de sesiones. \\ \hline
 ASR-04 &
-Que la sesión de partida sea distinta de la conexión TCP, cómo se detecta una conexión medio abierta, cómo se reasocia una sesión a otra conexión o a otro dispositivo, dónde vive el estado mientras el jugador no está y qué reloj mide los plazos. Es el ejemplo de clase aplicado a Bastion. &
+Que la sesión de partida sea distinta de la conexión TCP, cómo se detecta una conexión medio abierta, cómo se reasocia una sesión a otra conexión o a otro dispositivo, dónde vive el estado mientras el jugador no está y qué reloj mide los plazos. &
 Ligar la partida al socket y darla por terminada cuando la conexión se cierra. \\ \hline
 ASR-05 &
 Qué se escribe de forma confirmada y qué de forma diferida, cuánto se puede perder, cómo se detecta la pérdida de la conexión con la base de datos, qué ocurre con las partidas mientras no está y cómo se reconstruyen. &
@@ -126,8 +124,8 @@ Ranking e historial (CU-35, CU-36) & Funcionalidad & Son consultas sobre datos q
 Repetición de una partida (CU-37) & Funcionalidad & Se apoya en el determinismo de ASR-06 y en las jugadas registradas de ASR-05; no añade una decisión propia. \\ \hline
 Tutorial (CU-41) & Funcionalidad & Es importante para REQ-07, pero se resuelve dentro del cliente y del motor que otros ASR ya exigen. \\ \hline
 Moderadores y bitácoras (CU-46 a CU-48) & Funcionalidad & Son operaciones administrativas sobre datos que ASR-02 y ASR-11 ya obligan a registrar. \\ \hline
-Originalidad frente a Quoridor y licencias de recursos (CON-15, CON-18; ESC-15) & Restricción & Importancia alta y sensibilidad baja: se cumplen con marca, textos y recursos fuera del código, una convención que ASR-13 ya impone. Ninguna estructura razonable lo impide. \\ \hline
-Instalación en plataformas de distribución (Q-10, ESC-18, DEP-08) & Restricción condicionada & Solo aplica si se publica, y se resuelve con el empaquetado, sin tocar componentes. \\ \hline
+Originalidad frente a Quoridor y licencias de recursos (CON-15, CON-18; QAS-15) & Restricción & Importancia alta y sensibilidad baja: se cumplen con marca, textos y recursos fuera del código, una convención que ASR-13 ya impone. Ninguna estructura razonable lo impide. \\ \hline
+Instalación en plataformas de distribución (Q-10, QAS-18, DEP-08) & Restricción condicionada & Solo aplica si se publica, y se resuelve con el empaquetado, sin tocar componentes. \\ \hline
 DEC-01: modelo cliente-servidor basado en servicios & Decisión del equipo & No es un requisito, sino la respuesta del equipo a ASR-08 y ASR-02. Se registra aquí como decisión ya tomada. \\ \hline
 DEC-02: no se confía en el cliente; toda la lógica del juego se ejecuta en el servidor & Decisión del equipo & Responde a ASR-02 de la forma más estricta posible. Condiciona cómo se cumplen ASR-01 y ASR-06, pero no es un requisito. \\ \hline
 DEC-03: una partida en línea exige conexión con la base de datos & Decisión del equipo & Fija cómo se cumple ASR-05: ante una caída, la partida no continúa sin base de datos. Es una decisión sobre el requisito, no un requisito nuevo. \\ \hline
@@ -144,12 +142,12 @@ Ya confirmado el conjunto, falta decidir qué ASR pesa más. La priorización si
 \hline
 \filacab \cab{Nivel} & \cab{Importancia} & \cab{Sensibilidad arquitectónica} \\ \hline
 \endhead
-Alta (A) & Lo impone el cliente, la regulación o un requisito impuesto, o su incumplimiento provoca el rechazo de un stakeholder con poder de decisión. & Hay alternativas estructurales razonables y solo algunas lo cumplen, y cambiar de alternativa después afecta a varios componentes a la vez. \\ \hline
+Alta (H) & Lo impone el cliente, la regulación o un requisito impuesto, o su incumplimiento provoca el rechazo de un stakeholder con poder de decisión. & Hay alternativas estructurales razonables y solo algunas lo cumplen, y cambiar de alternativa después afecta a varios componentes a la vez. \\ \hline
 Media (M) & Depende de una pregunta abierta o de una funcionalidad valiosa pero no esencial. & Su efecto queda dentro de un componente, o en convenciones que atraviesan el sistema sin cambiar su partición. \\ \hline
-Baja (B) & Es deseable, pero ningún stakeholder lo exige. & Se cumple igual en cualquier alternativa razonable. \\ \hline
+Baja (L) & Es deseable, pero ningún stakeholder lo exige. & Se cumple igual en cualquier alternativa razonable. \\ \hline
 \end{tabla}
 
-Las dos calificaciones se combinan en cuatro niveles. Un ASR (A, A) es \textbf{prioritario}: es un criterio de descarte, y una alternativa que no pueda cumplirlo se rechaza aunque sea mejor en todo lo demás. Un ASR (A, M) tiene prioridad \textbf{alta}: es obligatorio, pero se cumple dentro de la estructura que los prioritarios imponen. Un ASR (M, M) tiene prioridad \textbf{media}. Un ASR con importancia media y sensibilidad alta queda \textbf{reservado} mientras dependa de una pregunta abierta, porque tomarlo en cuenta hoy obligaría a diseñar para una situación que puede no llegar. Ningún ASR resultó con calificación baja: un requisito así no habría pasado la prueba. Dentro de cada nivel, el orden sigue a las dependencias: primero va lo que los demás dan por hecho.
+Las dos calificaciones se combinan en cuatro niveles. Un ASR (H, H) es \textbf{prioritario}: es un criterio de descarte, y una alternativa que no pueda cumplirlo se rechaza aunque sea mejor en todo lo demás. Un ASR (H, M) tiene prioridad \textbf{alta}: es obligatorio, pero se cumple dentro de la estructura que los prioritarios imponen. Un ASR (M, M) tiene prioridad \textbf{media}. Un ASR con importancia media y sensibilidad alta queda \textbf{reservado} mientras dependa de una pregunta abierta, porque tomarlo en cuenta hoy obligaría a diseñar para una situación que puede no llegar. Ningún ASR resultó con calificación baja: un requisito así no habría pasado la prueba. Dentro de cada nivel, el orden sigue a las dependencias: primero va lo que los demás dan por hecho.
 
 \textbf{ASR priorizados.} La tabla ordena los quince ASR con la justificación de cada una de sus dos calificaciones.
 
@@ -157,21 +155,21 @@ Las dos calificaciones se combinan en cuatro niveles. Un ASR (A, A) es \textbf{p
 \hline
 \filacab \cab{Orden} & \cab{ASR} & \cab{Importancia y por qué} & \cab{Sensibilidad y por qué} & \cab{Prioridad} \\ \hline
 \endhead
-1 & ASR-08 & A. Lo impone el cliente (REQ-01) y es el objetivo central del juego. & A. Sin él no hay servidor, red ni protocolo: es la diferencia estructural más grande de la lista. & Prioritario \\ \hline
-2 & ASR-02 & A. Lo exige STK-15, que da por hecho un cliente alterado (CRN-23). & A. Separa el servidor que decide del que solo retransmite, y ese cambio rehace cliente, servidor y protocolo. & Prioritario \\ \hline
-3 & ASR-14 & A. La tecnología la asigna el cliente (STK-03) y no se negocia. & A. Obliga a un protocolo propio y a un modelo relacional, que otras tecnologías darían resueltos. & Prioritario \\ \hline
-4 & ASR-03 & A. Sin él, el segundo factor de REQ-03 no protege nada y el chat de menores viaja legible (STK-15, STK-02). & A. Dónde vive el cifrado cambia el formato de los mensajes en los dos extremos. & Prioritario \\ \hline
-5 & ASR-04 & A. Los jugadores son niños en redes domésticas inestables (CRN-06, STK-01). & A. Obliga a separar la sesión de partida de la conexión, lo que toca servidor, protocolo y cliente. & Prioritario \\ \hline
-6 & ASR-01 & A. Es el único requisito con un número impuesto (REQ-02). & A. Su reparto cambia el flujo de la jugada en todos los componentes que atraviesa. & Prioritario \\ \hline
-7 & ASR-05 & A. Lo exige STK-13 (CRN-19), sobre una base de datos alojada por un tercero (DEP-03, DEP-04). & A. Decide qué componente tiene el estado vigente y cuándo se escribe. & Prioritario \\ \hline
-8 & ASR-06 & A. El diseñador cambiará las reglas decenas de veces (CRN-13) y CON-15 puede obligar a variantes. & A. Decide si el motor es una pieza independiente y determinista o queda mezclado con el servidor y la interfaz. & Prioritario \\ \hline
-9 & ASR-11 & A. Lo imponen REQ-04 y REQ-05, y STK-02 puede vetar el juego. & M. Su efecto queda en el chat y la moderación, una vez decidido quién tiene la autoridad. & Alta \\ \hline
-10 & ASR-12 & A. Lo imponen REQ-03 y REQ-07. & M. Queda dentro del módulo de cuentas y de sus dependencias externas. & Alta \\ \hline
-11 & ASR-13 & A. Lo imponen REQ-06 y el objetivo de distribución internacional. & M. Impone convenciones transversales, no una partición distinta. & Alta \\ \hline
-12 & ASR-15 & A. El plazo y los incrementos los fijan el cliente y el auditor (STK-03, STK-16). & M. Acota las alternativas sin elegir entre las razonables. & Alta \\ \hline
+1 & ASR-08 & H. Lo impone el cliente (REQ-01) y es el objetivo central del juego. & H. Sin él no hay servidor, red ni protocolo: es la diferencia estructural más grande de la lista. & Prioritario \\ \hline
+2 & ASR-02 & H. Lo exige STK-15, que da por hecho un cliente alterado (CRN-23). & H. Separa el servidor que decide del que solo retransmite, y ese cambio rehace cliente, servidor y protocolo. & Prioritario \\ \hline
+3 & ASR-14 & H. La tecnología la asigna el cliente (STK-03) y no se negocia. & H. Obliga a un protocolo propio y a un modelo relacional, que otras tecnologías darían resueltos. & Prioritario \\ \hline
+4 & ASR-03 & H. Sin él, el segundo factor de REQ-03 no protege nada y el chat de menores viaja legible (STK-15, STK-02). & H. Dónde vive el cifrado cambia el formato de los mensajes en los dos extremos. & Prioritario \\ \hline
+5 & ASR-04 & H. Los jugadores son niños en redes domésticas inestables (CRN-06, STK-01). & H. Obliga a separar la sesión de partida de la conexión, lo que toca servidor, protocolo y cliente. & Prioritario \\ \hline
+6 & ASR-01 & H. Es el único requisito con un número impuesto (REQ-02). & H. Su reparto cambia el flujo de la jugada en todos los componentes que atraviesa. & Prioritario \\ \hline
+7 & ASR-05 & H. Lo exige STK-13 (CRN-19), sobre una base de datos alojada por un tercero (DEP-03, DEP-04). & H. Decide qué componente tiene el estado vigente y cuándo se escribe. & Prioritario \\ \hline
+8 & ASR-06 & H. El diseñador cambiará las reglas decenas de veces (CRN-13) y CON-15 puede obligar a variantes. & H. Decide si el motor es una pieza independiente y determinista o queda mezclado con el servidor y la interfaz. & Prioritario \\ \hline
+9 & ASR-11 & H. Lo imponen REQ-04 y REQ-05, y STK-02 puede vetar el juego. & M. Su efecto queda en el chat y la moderación, una vez decidido quién tiene la autoridad. & Alta \\ \hline
+10 & ASR-12 & H. Lo imponen REQ-03 y REQ-07. & M. Queda dentro del módulo de cuentas y de sus dependencias externas. & Alta \\ \hline
+11 & ASR-13 & H. Lo imponen REQ-06 y el objetivo de distribución internacional. & M. Impone convenciones transversales, no una partición distinta. & Alta \\ \hline
+12 & ASR-15 & H. El plazo y los incrementos los fijan el cliente y el auditor (STK-03, STK-16). & M. Acota las alternativas sin elegir entre las razonables. & Alta \\ \hline
 13 & ASR-09 & M. Es funcionalidad valiosa pero no esencial. & M. Pide un mecanismo de difusión dentro del servidor. & Media \\ \hline
 14 & ASR-10 & M. CU-27 lo especifica, pero Q-01 sigue abierta en el documento de contexto. & M. La IA entra como un participante más dentro de la estructura de partidas. & Media \\ \hline
-15 & ASR-07 & M. Depende de Q-02. & A. Si se aprueba, obliga a separar el servidor y su configuración. & Reservado \\ \hline
+15 & ASR-07 & M. Depende de Q-02. & H. Si se aprueba, obliga a separar el servidor y su configuración. & Reservado \\ \hline
 \end{tabla}
 
 \textbf{Por qué este orden entre los prioritarios.} ASR-08 va primero porque sin él no hay servidor que arbitrar; ASR-02 decide que ese servidor tiene la autoridad; ASR-14 fija con qué se construye todo. Los cinco restantes piden al servidor, a la comunicación y a la persistencia comportamientos que solo tienen sentido una vez que los tres primeros existen: la protección del tráfico y la supervivencia a una desconexión se apoyan en el canal que ASR-14 obliga a construir, y el tiempo de respuesta, la persistencia y las reglas, en el servidor que ASR-08 y ASR-02 ya establecieron.

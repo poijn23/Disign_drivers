@@ -11,7 +11,7 @@
 \parte{Enunciado}{Existe una sola implementación del motor de reglas, con parámetros en configuración externa, separada de la interfaz, de la red y de la base de datos, determinista y capaz de reproducir partidas completas sin interfaz.}
 \parte{Por qué le toca este turno}{Suma 16 de 20, con dos ASR prioritarios, ASR-06 y ASR-14, y va antes que DRV-03 también por dependencia: el reparto del segundo no se puede medir mientras el trabajo que hace el motor en cada jugada no esté acotado. Además es lo que el arbitraje de la iteración~1 consulta en cada jugada y lo que CD-11 necesita para entregar las jugadas legales.}
 \parte{Qué decide esta iteración}{Cómo se construye el motor para que las reglas cambien sin tocar código y para que una partida completa se pueda ejecutar y reproducir sin abrir la interfaz.}
-\parte{Decisiones ya tomadas}{DEC-01 a DEC-03 y lo decidido en las iteraciones~1 y~2. Pesa sobre todo DEC-02: con la lógica solo en el servidor, el motor tiene un único consumidor, así que el problema deja de ser que dos implementaciones coincidan y pasa a ser que una sola sea parametrizable y reproducible.}
+\parte{Decisiones ya tomadas}{DEC-01 a DEC-03 y lo decidido en las iteraciones~1 y~2. Pesa sobre todo DEC-02: con la lógica solo en el servidor, el motor tiene un único consumidor, así que lo que importa es que sea parametrizable y reproducible.}
 \parte{Qué no decide}{Cuánto tiempo puede tardar el motor dentro del segundo, que se reparte en la iteración~4. Tampoco decide el contenido de las reglas, que es trabajo del diseñador (STK-06) y depende de Q-08, ni si habrá IA (Q-01).}
 \end{tabla}
 
@@ -26,7 +26,7 @@ Del conjunto de la sección~\ref{sec:asr}, estos son los ASR que DRV-05 agrupa y
 \hline
 \filacab \cab{ASR} & \cab{Qué debe cumplir la arquitectura} & \cab{Prioridad} & \cab{Papel en esta iteración} \\ \hline
 \endhead
-ASR-06 & Las reglas cambian sin tocar código y una partida completa se reproduce sin interfaz. & Prioritario & Objetivo. Su medida es ESC-12, con ESC-17. \\ \hline
+ASR-06 & Las reglas cambian sin tocar código y una partida completa se reproduce sin interfaz. & Prioritario & Objetivo. Su medida es QAS-12, con QAS-17. \\ \hline
 ASR-14 & La solución usa solo C\# sobre .NET, SQL Server como almacenamiento y TCP sin WebSockets. & Prioritario & Condición: el motor es una biblioteca del mismo ecosistema que el servidor. \\ \hline
 \end{tabla}
 
@@ -70,13 +70,13 @@ Reproducen partidas jugada por jugada y posiciones preparadas, que solo funciona
 \hline
 \filacab \cab{Escenario} & \cab{Atributo} & \cab{Medida} \\ \hline
 \endhead
-ESC-12 \newline (ASR-06) & Mantenibilidad: modificabilidad &
+QAS-12 \newline (ASR-06) & Mantenibilidad: modificabilidad &
 El diseñador cambia el tablero y el número de muros en menos de 10 minutos, sin programador, sin recompilar y con 0 cambios de código. \\ \hline
-ESC-17 & Mantenibilidad: capacidad de prueba &
+QAS-17 & Mantenibilidad: capacidad de prueba &
 500 partidas completas se ejecutan en menos de 10 minutos sin interfaz, el 100~\% de las repeticiones coincide con el original y cualquier fallo se reproduce señalando la jugada exacta. \\ \hline
-ESC-02 & Usabilidad &
+QAS-02 & Usabilidad &
 El motor tiene que poder decir qué camino quedaría cerrado, no solo que la jugada es inválida. Es una obligación sobre su interfaz. \\ \hline
-ESC-01 \newline (ASR-01) & Desempeño &
+QAS-01 \newline (ASR-01) & Desempeño &
 Límite. El trabajo del motor por jugada entra en el segundo, y se mide en la iteración~4. \\ \hline
 \end{tabla}
 
@@ -135,15 +135,15 @@ Q-01 & Si habrá IA. CU-27 consulta al mismo motor para sugerir y para jugar, as
 \hline
 \filacab \cab{Entrada} & \cab{Peso} & \cab{Por qué pesa lo que pesa} & \cab{Decisión} \\ \hline
 \endhead
-ESC-12 (ASR-06) & Alto & Es la medida del objetivo y decide si los parámetros viven en el código o fuera de él. & Se atiende \\ \hline
-ESC-17 & Alto & Obliga a que el motor se pueda ejecutar sin interfaz y a que la partida sea determinista, que es una propiedad estructural, no un detalle de implementación. & Se atiende \\ \hline
+QAS-12 (ASR-06) & Alto & Es la medida del objetivo y decide si los parámetros viven en el código o fuera de él. & Se atiende \\ \hline
+QAS-17 & Alto & Obliga a que el motor se pueda ejecutar sin interfaz y a que la partida sea determinista, que es una propiedad estructural, no un detalle de implementación. & Se atiende \\ \hline
 CRN-13, CRN-17 & Alto & Son el origen de las dos medidas y describen la frecuencia real del cambio. & Se atiende \\ \hline
 CU-20, CU-21 & Alto & Definen qué reglas tiene que aplicar y qué tiene que saber enumerar. & Se atiende \\ \hline
 CD-11 & Alto & Obliga a que la interfaz del motor entregue jugadas legales y motivos, no solo un sí o un no. & Se atiende \\ \hline
-ESC-02 & Medio & Aporta la obligación de explicar el rechazo; la parte visual es de la interfaz. & Se atiende como obligación \\ \hline
+QAS-02 & Medio & Aporta la obligación de explicar el rechazo; la parte visual es de la interfaz. & Se atiende como obligación \\ \hline
 CU-27, CU-37, CU-41 & Medio & Consumen el motor fuera de una partida en línea y confirman que tiene que poder usarse por separado. & Se atiende \\ \hline
 CON-15, Q-08 & Medio & Vuelven probable el cambio de reglas, que es lo que la parametrización protege. & Se atiende como supuesto \\ \hline
-ESC-01 & Medio, como límite & El costo del motor por jugada entra en el segundo, pero su reparto se decide después. & Se difiere a la iteración~4 \\ \hline
+QAS-01 & Medio, como límite & El costo del motor por jugada entra en el segundo, pero su reparto se decide después. & Se difiere a la iteración~4 \\ \hline
 CU-25 & Bajo & Las condiciones de término ya están decididas en la máquina de estados de CD-04; aquí solo se consultan. & Se atiende como supuesto \\ \hline
 \end{tabla}
 
@@ -154,8 +154,8 @@ CU-25 & Bajo & Las condiciones de término ya están decididas en la máquina de
 \parte{Objetivo}{Que las reglas del juego se puedan cambiar sin tocar código y que una partida completa se pueda ejecutar y reproducir sin abrir la interfaz.}
 \parte{ASR que satisface}{ASR-06, con ASR-14 como condición.}
 \parte{Driver que cubre}{DRV-05.}
-\parte{Medida}{La de ESC-12: el diseñador cambia el tablero de 9$\times$9 a 7$\times$7 y los muros de 10 a 8 en menos de 10 minutos, sin programador, sin recompilar y con 0 cambios de código en el repositorio. Con ESC-17 como segunda comprobación de la misma propiedad: 500 partidas se ejecutan y se reproducen sin interfaz en menos de 10 minutos, con el 100~\% de coincidencia.}
-\parte{Límite que respeta}{ESC-01. El trabajo del motor por jugada tiene que caber en el segundo, aunque su reparto se decida en la iteración~4.}
+\parte{Medida}{La de QAS-12: el diseñador cambia el tablero de 9$\times$9 a 7$\times$7 y los muros de 10 a 8 en menos de 10 minutos, sin programador, sin recompilar y con 0 cambios de código en el repositorio. Con QAS-17 como segunda comprobación de la misma propiedad: 500 partidas se ejecutan y se reproducen sin interfaz en menos de 10 minutos, con el 100~\% de coincidencia.}
+\parte{Límite que respeta}{QAS-01. El trabajo del motor por jugada tiene que caber en el segundo, aunque su reparto se decida en la iteración~4.}
 \parte{Incremento que produce}{El diseñador cambia los parámetros de una partida y juega con ellos sin que nadie recompile, y el equipo de pruebas lanza desde la línea de comandos las partidas registradas hasta ese momento y obtiene el mismo resultado que tuvieron. Las dos cosas se pueden demostrar en el incremento de la semana.}
 \parte{Criterio de éxito}{La iteración termina cuando el cambio de parámetros se hace sin código y las 500 repeticiones coinciden.}
 \end{tabla}
@@ -174,7 +174,7 @@ CU-25 & Bajo & Las condiciones de término ya están decididas en la máquina de
 \parte{Por qué se elige}{Porque las dos medidas del objetivo dependen de él y de nada más: que las reglas cambien sin código depende de dónde vivan sus parámetros, y que una partida se reproduzca depende de que el motor no tenga azar ni reloj dentro. Se elige frente al servicio de estado de la partida, que ya tiene su iteración y que consume el motor sin definirlo, y frente a la interfaz del cliente, que con DEC-02 no contiene ninguna regla.}
 \parte{Qué falta decidir sobre él}{Dónde viven el tamaño del tablero, el número de muros y el resto de valores que el diseñador cambia. Qué interfaz expone: si solo valida o además enumera y explica. Y qué se hace con todo lo que introduce variación, el azar del sorteo inicial o el reloj, que es lo que impide reproducir una partida.}
 \parte{Evidencia en los casos de uso}{CU-21 describe en su paso 13 y su paso 14 las comprobaciones de solape y de camino, y en sus pasos 3 y 5 la necesidad de conocer los surcos válidos y el efecto sobre el camino más corto. CU-27 pide tablero de 9$\times$9 o de 7$\times$7 y sugerencias que expliquen la jugada recomendada, lo que solo es posible si el motor evalúa posiciones fuera de una partida. CU-37 reproduce una partida jugada por jugada. Ninguno dice dónde viven esos valores ni qué ocurre con el azar.}
-\parte{Trazabilidad}{DRV-05. DEC-02. CD-05, CD-11. ESC-12 (ASR-06), ESC-17, ESC-02, con ESC-01 como límite. CU-20, CU-21, CU-25, CU-27, CU-37, CU-41. CON-15, REQ-07, CON-14. CRN-13, CRN-17, CRN-12, CRN-01, CRN-03. Q-08, Q-01. STK-06, STK-10, STK-05, STK-09.}
+\parte{Trazabilidad}{DRV-05. DEC-02. CD-05, CD-11. QAS-12 (ASR-06), QAS-17, QAS-02, con QAS-01 como límite. CU-20, CU-21, CU-25, CU-27, CU-37, CU-41. CON-15, REQ-07, CON-14. CRN-13, CRN-17, CRN-12, CRN-01, CRN-03. Q-08, Q-01. STK-06, STK-10, STK-05, STK-09.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -187,9 +187,9 @@ CU-25 & Bajo & Las condiciones de término ya están decididas en la máquina de
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Estilo: separación de responsabilidades por dependencias.}
-\parte{Descripción}{El motor es una biblioteca que no conoce la pantalla, el socket ni la base de datos: recibe una posición y devuelve un resultado. Atiende ESC-17, porque lo que no depende de la interfaz se puede ejecutar sin ella, y hace posible que CU-27, CU-37 y CU-41 lo usen fuera de una partida en línea. Se elige frente a un motor que forme parte del servicio de estado, que obligaría a levantar el servidor completo para probar una regla.}
+\parte{Descripción}{El motor es una biblioteca que no conoce la pantalla, el socket ni la base de datos: recibe una posición y devuelve un resultado. Atiende QAS-17, porque lo que no depende de la interfaz se puede ejecutar sin ella, y hace posible que CU-27, CU-37 y CU-41 lo usen fuera de una partida en línea. Se elige frente a un motor que forme parte del servicio de estado, que obligaría a levantar el servidor completo para probar una regla.}
 \parte{Efectos}{La regresión de 500 partidas se lanza desde la línea de comandos. El servicio de estado consume el motor como una dependencia más. Obliga a definir con qué representación de la posición se habla con él, que es una decisión de interfaz que hay que tomar antes de construir.}
-\parte{Trazabilidad}{DRV-05, DRV-08. CD-03. ESC-17, ESC-12. CU-20, CU-21, CU-27, CU-37, CU-41. CON-14, CON-01. CRN-17, CRN-12. STK-10, STK-05.}
+\parte{Trazabilidad}{DRV-05, DRV-08. CD-03. QAS-17, QAS-12. CU-20, CU-21, CU-27, CU-37, CU-41. CON-14, CON-01. CRN-17, CRN-12. STK-10, STK-05.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -199,9 +199,9 @@ CU-25 & Bajo & Las condiciones de término ya están decididas en la máquina de
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Patrón de configuración.}
-\parte{Descripción}{El tamaño del tablero, el número de muros por jugador y el resto de valores ajustables viven fuera del código, en un archivo de configuración, y el servidor los fija al crear cada partida. Atiende ESC-12, que es la medida del objetivo. Se elige frente a tenerlos como constantes, que obliga a recompilar y a un programador en cada prueba de balanceo (CRN-13), y frente a variantes codificadas una por una, que no cubren los valores que nadie previó.}
+\parte{Descripción}{El tamaño del tablero, el número de muros por jugador y el resto de valores ajustables viven fuera del código, en un archivo de configuración, y el servidor los fija al crear cada partida. Atiende QAS-12, que es la medida del objetivo. Se elige frente a tenerlos como constantes, que obliga a recompilar y a un programador en cada prueba de balanceo (CRN-13), y frente a variantes codificadas una por una, que no cubren los valores que nadie previó.}
 \parte{Efectos}{El diseñador cambia valores sin tocar el repositorio, y los cambios que Q-08 pueda imponer por CON-15 entran como parámetros. Cada partida guarda con qué parámetros se jugó, porque de otro modo su repetición no coincidiría. Obliga a validar los parámetros al cargarlos: un tablero imposible tiene que fallar al inicio y no a media partida.}
-\parte{Trazabilidad}{DRV-05, DRV-08. ESC-12 (ASR-06), ESC-17. CU-21 (RN-02), CU-27, CU-37. CON-15, CON-13. CRN-13, CRN-03. Q-08. STK-06, STK-04.}
+\parte{Trazabilidad}{DRV-05, DRV-08. QAS-12 (ASR-06), QAS-17. CU-21 (RN-02), CU-27, CU-37. CON-15, CON-13. CRN-13, CRN-03. Q-08. STK-06, STK-04.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -211,9 +211,9 @@ CU-25 & Bajo & Las condiciones de término ya están decididas en la máquina de
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Patrón de diseño: función pura sobre el estado.}
-\parte{Descripción}{El motor no consulta la hora ni genera números al azar: lo que necesite de fuera entra como dato, incluida la semilla del sorteo inicial. Atiende ESC-17, porque la misma secuencia de jugadas sobre la misma posición inicial da siempre el mismo resultado. Se elige frente a dejar que el motor consulte el reloj del sistema, que es lo que hace irreproducible una partida y convierte un fallo intermitente en algo que nadie puede investigar.}
-\parte{Efectos}{El reloj de la partida vive en el servicio de estado (CD-04) y llega al motor como un valor. La repetición de CU-37 y la regresión de ESC-17 pasan a ser posibles. Obliga a registrar la semilla junto con la partida.}
-\parte{Trazabilidad}{DRV-05, DRV-01. CD-04, CD-18. ESC-17, ESC-12. CU-20, CU-21, CU-37. CON-14. CRN-17. STK-10, STK-06.}
+\parte{Descripción}{El motor no consulta la hora ni genera números al azar: lo que necesite de fuera entra como dato, incluida la semilla del sorteo inicial. Atiende QAS-17, porque la misma secuencia de jugadas sobre la misma posición inicial da siempre el mismo resultado. Se elige frente a dejar que el motor consulte el reloj del sistema, que es lo que hace irreproducible una partida y convierte un fallo intermitente en algo que nadie puede investigar.}
+\parte{Efectos}{El reloj de la partida vive en el servicio de estado (CD-04) y llega al motor como un valor. La repetición de CU-37 y la regresión de QAS-17 pasan a ser posibles. Obliga a registrar la semilla junto con la partida.}
+\parte{Trazabilidad}{DRV-05, DRV-01. CD-04, CD-18. QAS-17, QAS-12. CU-20, CU-21, CU-37. CON-14. CRN-17. STK-10, STK-06.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -223,9 +223,9 @@ CU-25 & Bajo & Las condiciones de término ya están decididas en la máquina de
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Patrón de interfaz de componente.}
-\parte{Descripción}{El motor expone tres operaciones: validar una jugada, enumerar las jugadas legales de la posición y explicar por qué una jugada concreta no lo es, indicando qué camino quedaría cerrado o con qué muro se cruza. Atiende CD-11, que necesita la enumeración para el mensaje de turno, y ESC-02, que necesita el motivo para poder mostrarlo. Se elige frente a una interfaz que solo responda sí o no, que obligaría al cliente a deducir el resto y contradiría DEC-02.}
+\parte{Descripción}{El motor expone tres operaciones: validar una jugada, enumerar las jugadas legales de la posición y explicar por qué una jugada concreta no lo es, indicando qué camino quedaría cerrado o con qué muro se cruza. Atiende CD-11, que necesita la enumeración para el mensaje de turno, y QAS-02, que necesita el motivo para poder mostrarlo. Se elige frente a una interfaz que solo responda sí o no, que obligaría al cliente a deducir el resto y contradiría DEC-02.}
 \parte{Efectos}{El mensaje de turno crece, con su costo para el protocolo y para el presupuesto de la iteración~4. La interfaz del cliente de CU-21 puede resaltar surcos válidos y mostrar el aviso de FA-02 sin calcular nada. Las sugerencias de CU-27 se apoyan en la misma enumeración.}
-\parte{Trazabilidad}{DRV-05, DRV-01. DEC-02. CD-11. ESC-02, ESC-12, ESC-01. CU-20 (paso 1), CU-21 (pasos 3 y 5, FA-02), CU-27. REQ-07. CRN-01, CRN-12. STK-01, STK-09, STK-06.}
+\parte{Trazabilidad}{DRV-05, DRV-01. DEC-02. CD-11. QAS-02, QAS-12, QAS-01. CU-20 (paso 1), CU-21 (pasos 3 y 5, FA-02), CU-27. REQ-07. CRN-01, CRN-12. STK-01, STK-09, STK-06.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -235,7 +235,7 @@ CU-25 & Bajo & Las condiciones de término ya están decididas en la máquina de
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Táctica de capacidad de prueba: ejecución controlada del componente.}
-\parte{Descripción}{Un programa aparte carga las partidas registradas, las vuelve a ejecutar jugada por jugada contra el motor y compara el resultado con el original, señalando la partida y la jugada donde aparece la primera diferencia. Atiende ESC-17 y lo convierte en la prueba del incremento semanal que pide CON-14. Se elige frente a probar a través de la interfaz, que es lo que CRN-17 declara inviable por tiempo.}
+\parte{Descripción}{Un programa aparte carga las partidas registradas, las vuelve a ejecutar jugada por jugada contra el motor y compara el resultado con el original, señalando la partida y la jugada donde aparece la primera diferencia. Atiende QAS-17 y lo convierte en la prueba del incremento semanal que pide CON-14. Se elige frente a probar a través de la interfaz, que es lo que CRN-17 declara inviable por tiempo.}
 \parte{Efectos}{Cada incremento semanal se cierra con una ejecución de la regresión, que es la evidencia que STK-16 audita. Obliga a que las partidas queden registradas jugada por jugada, que es lo que la iteración~5 persistirá. Un fallo se reproduce sin abrir el cliente.}
-\parte{Trazabilidad}{DRV-05, DRV-08. CD-18, CD-20. ESC-17, ESC-12. CU-37, CU-20, CU-21. CON-14, CON-13. CRN-17, CRN-08. STK-10, STK-16, STK-03.}
+\parte{Trazabilidad}{DRV-05, DRV-08. CD-18, CD-20. QAS-17, QAS-12. CU-37, CU-20, CU-21. CON-14, CON-13. CRN-17, CRN-08. STK-10, STK-16, STK-03.}
 \end{tabla}

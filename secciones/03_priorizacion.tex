@@ -2,7 +2,7 @@
 \section{Drivers y su priorización}\label{sec:priorizacion}
 % ============================================================
 
-Esta sección deriva los drivers de los ASR de la sección~\ref{sec:asr} y los ordena. Un driver agrupa los ASR que dependen de la misma decisión estructural; su prioridad empieza por la de sus ASR y se completa con el impacto de esa decisión sobre la arquitectura. Donde el documento de contexto y la sección~\ref{sec:asr} difieren, manda la sección~\ref{sec:asr}.
+Esta sección deriva los drivers de los ASR de la sección~\ref{sec:asr} y los ordena. Un driver agrupa los ASR que dependen de la misma decisión estructural; su prioridad empieza por la de sus ASR y se completa con el impacto de esa decisión sobre la arquitectura.
 
 % ------------------------------------------------------------
 \subsection{De los ASR a los drivers}
@@ -23,9 +23,7 @@ DRV-07 & Localización de extremo a extremo: todo texto y formato se adapta sin 
 DRV-08 & Plazo de 14 semanas con un equipo de dos personas: rebanadas verticales, regresión semanal sin interfaz y puntos de variación acotados a lo que puede recortarse. & ASR-15 (alta); ASR-10 (media); ASR-07 (reservado) & Qué se aísla para poder recortarse y en qué orden se construye. \\ \hline
 \end{tabla}
 
-\textbf{Qué cambia respecto al documento de contexto.} Resultan los mismos ocho drivers, pero sus enunciados se ajustan a los ASR. DRV-01 incorpora la partida en línea arbitrada (ASR-08), que el documento de contexto daba por supuesta. DRV-06 y DRV-07 dejan de ser drivers sin ASR: ahora recogen ASR que proceden de restricciones y de funcionalidad. DRV-08 incorpora el tamaño del equipo (ASR-15) y la IA como funcionalidad recortable (ASR-10). ASR-01 conserva su medida, pero la decisión que forzaba en el documento de contexto, validar parte de la jugada en el cliente, queda descartada por DEC-02.
-
-\textbf{Cobertura.} Los catorce ASR activos quedan dentro de algún driver, y el reservado ASR-07 en DRV-08. Ningún driver existe sin al menos un ASR que lo sostenga.
+\textbf{Cobertura.} Los catorce ASR activos quedan dentro de algún driver, y el reservado ASR-07 en DRV-08.
 
 % ------------------------------------------------------------
 \subsection{Criterios}
@@ -78,14 +76,14 @@ Este documento desarrolla la primera iteración de cada driver, en el orden de l
 \hline
 \filacab \cab{Iter.} & \cab{Driver} & \cab{ASR} & \cab{Objetivo único} & \cab{Elemento a descomponer y medida} \\ \hline
 \endhead
-1 & DRV-01 & ASR-02 & El servidor es la única autoridad sobre el estado de una partida en curso. & Gestión del estado de la partida. Medida: ESC-05. \\ \hline
-2 & DRV-02 & ASR-03 & El tráfico capturado no revela nada legible ni se puede reutilizar. & Servicio de protocolo. Medida: ESC-06. \\ \hline
-3 & DRV-05 & ASR-06 & Las reglas cambian sin tocar código y el motor se ejecuta sin interfaz. & Motor de reglas. Medida: ESC-12. \\ \hline
-4 & DRV-03 & ASR-01 & Una jugada se responde en menos de un segundo. & Camino de la jugada. Medida: ESC-01. \\ \hline
-5 & DRV-04 & ASR-05 & Una caída de la base de datos pierde solo lo acordado y deja constancia. & Servicio de acceso a datos. Medida: ESC-09. \\ \hline
-6 & DRV-06 & ASR-11 & Ningún mensaje inapropiado llega a un menor, ni siquiera cuando el filtro falla. & Servicio de chat. Medida: ESC-04. \\ \hline
-7 & DRV-07 & ASR-13 & Se agrega un idioma nuevo sin tocar código ni rehacer pantallas. & Catálogo de textos y formatos. Medida: ESC-11. \\ \hline
-8 & DRV-08 & ASR-15 & El oponente controlado por IA se puede recortar sin tocar el núcleo. & Punto de variación del oponente. Medida: ESC-13. \\ \hline
+1 & DRV-01 & ASR-02 & El servidor es la única autoridad sobre el estado de una partida en curso. & Gestión del estado de la partida. Medida: QAS-05. \\ \hline
+2 & DRV-02 & ASR-03 & El tráfico capturado no revela nada legible ni se puede reutilizar. & Servicio de protocolo. Medida: QAS-06. \\ \hline
+3 & DRV-05 & ASR-06 & Las reglas cambian sin tocar código y el motor se ejecuta sin interfaz. & Motor de reglas. Medida: QAS-12. \\ \hline
+4 & DRV-03 & ASR-01 & Una jugada se responde en menos de un segundo. & Camino de la jugada. Medida: QAS-01. \\ \hline
+5 & DRV-04 & ASR-05 & Una caída de la base de datos pierde solo lo acordado y deja constancia. & Servicio de acceso a datos. Medida: QAS-09. \\ \hline
+6 & DRV-06 & ASR-11 & Ningún mensaje inapropiado llega a un menor, ni siquiera cuando el filtro falla. & Servicio de chat. Medida: QAS-04. \\ \hline
+7 & DRV-07 & ASR-13 & Se agrega un idioma nuevo sin tocar código ni rehacer pantallas. & Catálogo de textos y formatos. Medida: QAS-11. \\ \hline
+8 & DRV-08 & ASR-15 & El oponente controlado por IA se puede recortar sin tocar el núcleo. & Punto de variación del oponente. Medida: QAS-13. \\ \hline
 \end{tabla}
 
 \subsubsection*{Cómo quedan atendidos los ASR}
