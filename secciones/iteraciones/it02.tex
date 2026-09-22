@@ -10,9 +10,9 @@
 \parte{Driver}{DRV-02 --- Protocolo propio sobre TCP.}
 \parte{Enunciado}{Sin WebSockets, el equipo diseña un protocolo que resuelve la delimitación, el versionado, la validación, la sesión y el cifrado, con un costo por mensaje compatible con el segundo por jugada.}
 \parte{Por qué le toca este turno}{Es el segundo en la calificación de la sección~\ref{sec:priorizacion}, con 18 de 20, y agrupa tres ASR prioritarios: ASR-03, ASR-04 y ASR-14. Su costo de cambio tardío es máximo: el formato y el apretón de manos viven en los dos extremos, así que cambiarlos después obliga a redesplegar todos los clientes. Y la iteración~1 ya dejó el estado con dueño, que es lo que el protocolo necesita saber para transportar propuestas y decisiones.}
-\parte{Qué decide esta iteración}{Cómo viaja un mensaje entre cliente y servidor de modo que quien capture el tráfico no pueda leerlo ni reutilizarlo. Nada más: es el único objetivo del paso~2 y se comprueba con la medida de ESC-06.}
+\parte{Qué decide esta iteración}{Cómo viaja un mensaje entre cliente y servidor de modo que quien capture el tráfico no pueda leerlo ni reutilizarlo. Se comprueba con la medida de QAS-06.}
 \parte{Decisiones ya tomadas}{DEC-01 a DEC-03, y lo decidido en la iteración~1: el servidor es la autoridad (CD-01), toda la lógica vive en él (CD-02), el servidor está partido en servicios y uno de ellos es el de protocolo (CD-03), y la entrada se valida antes de llegar al motor (CD-07), con autenticación por mensaje (CD-08) y registro de los intentos (CD-09).}
-\parte{Qué no decide}{La detección de la desconexión y la reasociación de sesión (ESC-08), que necesitan además la sesión de partida y se deciden en una iteración posterior; esta iteración solo se obliga a dejarles sitio en el apretón de manos. Tampoco decide el motor de reglas (iteración~3), el reparto del segundo (iteración~4) ni la persistencia (iteración~5).}
+\parte{Qué no decide}{La detección de la desconexión y la reasociación de sesión (QAS-08), que necesitan además la sesión de partida y se deciden en una iteración posterior; esta iteración solo se obliga a dejarles sitio en el apretón de manos. Tampoco decide el motor de reglas (iteración~3), el reparto del segundo (iteración~4) ni la persistencia (iteración~5).}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -26,7 +26,7 @@ Del conjunto de la sección~\ref{sec:asr}, estos son los ASR que DRV-02 agrupa y
 \hline
 \filacab \cab{ASR} & \cab{Qué debe cumplir la arquitectura} & \cab{Prioridad} & \cab{Papel en esta iteración} \\ \hline
 \endhead
-ASR-03 & El tráfico capturado no revela credenciales, códigos, sesiones ni chat, y no se puede reutilizar. & Prioritario & Objetivo. Su medida es ESC-06. \\ \hline
+ASR-03 & El tráfico capturado no revela credenciales, códigos, sesiones ni chat, y no se puede reutilizar. & Prioritario & Objetivo. Su medida es QAS-06. \\ \hline
 ASR-14 & La solución usa solo C\# sobre .NET, SQL Server como almacenamiento y TCP sin WebSockets. & Prioritario & Condición: obliga a que el protocolo sea propio. \\ \hline
 ASR-04 & Una desconexión no ordenada no deja la partida indefinida: se detecta en menos de 15 segundos y el jugador retoma en menos de 5 si vuelve antes de 2 minutos, incluso desde otro dispositivo. & Prioritario & Pendiente: el apretón de manos le deja sitio para reasociar sesiones. \\ \hline
 \end{tabla}
@@ -71,13 +71,13 @@ Llevan credenciales nuevas por el mismo canal, con el mismo riesgo. \\ \hline
 \hline
 \filacab \cab{Escenario} & \cab{Atributo} & \cab{Medida} \\ \hline
 \endhead
-ESC-06 \newline (ASR-03) & Seguridad: confidencialidad y autenticidad &
+QAS-06 \newline (ASR-03) & Seguridad: confidencialidad y autenticidad &
 En la captura de una sesión completa en una red compartida: 0 contraseñas, 0 códigos, 0 identificadores de sesión y 0 mensajes de chat legibles; el servidor rechaza el 100~\% de 50 reenvíos. \\ \hline
-ESC-05 \newline (ASR-02) & Seguridad: integridad &
+QAS-05 \newline (ASR-02) & Seguridad: integridad &
 Ya cubierta por la iteración~1. Aquí actúa como condición: los 50 mensajes al azar de su batería atacan al protocolo, que debe rechazarlos sin llegar al arbitraje. \\ \hline
-ESC-01 \newline (ASR-01) & Desempeño &
+QAS-01 \newline (ASR-01) & Desempeño &
 Límite. La protección cuesta por mensaje y ese costo se mide en la iteración~4; ninguna decisión de aquí puede volver imposible el segundo. \\ \hline
-ESC-08 \newline (ASR-04) & Fiabilidad &
+QAS-08 \newline (ASR-04) & Fiabilidad &
 No se atiende aquí, pero condiciona: el apretón de manos debe admitir que una sesión existente se reasocie a una conexión nueva. \\ \hline
 \end{tabla}
 
@@ -137,15 +137,15 @@ Q-02 & La conexión LAN. Obliga a que la dirección y el puerto del servidor se 
 \hline
 \filacab \cab{Entrada} & \cab{Peso} & \cab{Por qué pesa lo que pesa} & \cab{Decisión} \\ \hline
 \endhead
-ESC-06 (ASR-03) & Alto & Es la medida del objetivo y decide dónde vive la protección: sobre la conexión completa o dentro de cada mensaje. Las dos opciones cambian el formato en los dos extremos. & Se atiende \\ \hline
+QAS-06 (ASR-03) & Alto & Es la medida del objetivo y decide dónde vive la protección: sobre la conexión completa o dentro de cada mensaje. Las dos opciones cambian el formato en los dos extremos. & Se atiende \\ \hline
 CRN-11 & Alto & La delimitación y el versionado son la base sobre la que todo lo demás se apoya, y sin ellos no hay mensajes que proteger. & Se atiende \\ \hline
 CU-01 & Alto & Es el caso donde viajan las credenciales y donde nace el token: es el que la medida captura. & Se atiende \\ \hline
 CON-02, CON-03 & Alto & Definen el punto de partida: un flujo de bytes sin nada hecho. & Se atiende \\ \hline
 Q-09 & Alto & La iteración existe en parte para cerrarla. & Se atiende \\ \hline
 CU-20, CU-21, CU-28 & Medio & Aportan el resto del tráfico que la captura recoge y el tamaño típico de los mensajes. & Se atiende \\ \hline
-ESC-05 & Medio & Ya está cubierta; aquí solo se comprueba que el protocolo no la rompa al filtrar mensajes mal formados antes del arbitraje. & Se atiende como condición \\ \hline
-ESC-01 & Medio, como límite & El costo por mensaje se mide en la iteración~4; aquí basta con no elegir algo que lo vuelva imposible. & Se atiende como restricción \\ \hline
-ESC-08 & Bajo aquí & Solo impone que el apretón de manos deje sitio a la reasociación. & Se difiere a una iteración posterior \\ \hline
+QAS-05 & Medio & Ya está cubierta; aquí solo se comprueba que el protocolo no la rompa al filtrar mensajes mal formados antes del arbitraje. & Se atiende como condición \\ \hline
+QAS-01 & Medio, como límite & El costo por mensaje se mide en la iteración~4; aquí basta con no elegir algo que lo vuelva imposible. & Se atiende como restricción \\ \hline
+QAS-08 & Bajo aquí & Solo impone que el apretón de manos deje sitio a la reasociación. & Se difiere a una iteración posterior \\ \hline
 CON-01, CON-16 & Bajo & No eligen entre alternativas, pero abaratan una: la plataforma ya trae un canal seguro probado. & Se atiende como supuesto \\ \hline
 \end{tabla}
 
@@ -156,8 +156,8 @@ CON-01, CON-16 & Bajo & No eligen entre alternativas, pero abaratan una: la plat
 \parte{Objetivo}{Que el tráfico entre cliente y servidor no revele nada legible a quien lo capture ni sirva para hacerse pasar por un jugador.}
 \parte{ASR que satisface}{ASR-03, con ASR-14 como condición.}
 \parte{Driver que cubre}{DRV-02, en lo que hace a la confidencialidad y a la autenticidad del canal.}
-\parte{Medida}{La de ESC-06: en la captura de una sesión completa en una red compartida, 0 contraseñas, 0 códigos de segundo factor, 0 identificadores de sesión y 0 mensajes de chat legibles; el servidor rechaza el 100~\% de 50 intentos de reenviar lo capturado.}
-\parte{Límite que respeta}{ESC-01 y ESC-05. La protección cuesta por mensaje, y el arbitraje de la iteración~1 debe seguir rechazando todo lo inválido.}
+\parte{Medida}{La de QAS-06: en la captura de una sesión completa en una red compartida, 0 contraseñas, 0 códigos de segundo factor, 0 identificadores de sesión y 0 mensajes de chat legibles; el servidor rechaza el 100~\% de 50 intentos de reenviar lo capturado.}
+\parte{Límite que respeta}{QAS-01 y QAS-05. La protección cuesta por mensaje, y el arbitraje de la iteración~1 debe seguir rechazando todo lo inválido.}
 \parte{Incremento que produce}{La partida de la iteración~1 sigue funcionando, ahora sobre un canal protegido: se puede capturar el tráfico de un inicio de sesión y de una partida completa con un analizador de red y mostrar que no aparece nada legible, y que reenviar lo capturado no abre sesión ni mueve una ficha.}
 \parte{Criterio de éxito}{La iteración termina cuando esa captura no encuentra nada legible y los 50 reenvíos se rechazan, sin que la partida deje de funcionar.}
 \end{tabla}
@@ -176,7 +176,7 @@ CON-01, CON-16 & Bajo & No eligen entre alternativas, pero abaratan una: la plat
 \parte{Por qué se elige}{Porque la medida del objetivo depende por completo de él: lo que un tercero captura es exactamente lo que este servicio pone en el socket. Se elige frente a descomponer el módulo de cuentas, que es donde nacen las credenciales pero no donde viajan, y frente al servicio de estado de la partida, que ya tiene su iteración y que recibe los mensajes cuando el problema de la captura ya ocurrió.}
 \parte{Qué falta decidir sobre él}{Dónde vive la protección: sobre la conexión completa o dentro de cada mensaje. Cómo se delimita un mensaje en un flujo que no los distingue. Qué ocurre cuando el cliente habla una versión distinta de la del servidor. Y qué hace que un mensaje capturado no se pueda reenviar con efecto.}
 \parte{Evidencia en los casos de uso}{CU-01 envía el identificador, la contraseña y el código del segundo factor y recibe un token que después acredita cada mensaje. CU-20 y CU-21 mandan ese token en cada jugada (paso 7 de CU-21). CU-28 manda texto de menores en CHAT\_SEND\_REQUEST. Los tres describen mensajes con nombre y campos, pero ninguno dice cómo se separan en el flujo ni cómo se protegen: eso es justo lo que falta.}
-\parte{Trazabilidad}{DRV-02. DEC-01, DEC-02. CD-03, CD-07, CD-08. ESC-06 (ASR-03), con ESC-05 y ESC-01 como límites. CU-01, CU-02, CU-09, CU-10, CU-20, CU-21, CU-28. CON-02, CON-03, REQ-03. CRN-22, CRN-11, CRN-05. Q-09. STK-15, STK-05, STK-02.}
+\parte{Trazabilidad}{DRV-02. DEC-01, DEC-02. CD-03, CD-07, CD-08. QAS-06 (ASR-03), con QAS-05 y QAS-01 como límites. CU-01, CU-02, CU-09, CU-10, CU-20, CU-21, CU-28. CON-02, CON-03, REQ-03. CRN-22, CRN-11, CRN-05. Q-09. STK-15, STK-05, STK-02.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -189,9 +189,9 @@ CON-01, CON-16 & Bajo & No eligen entre alternativas, pero abaratan una: la plat
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Táctica de seguridad: cifrar los datos en tránsito.}
-\parte{Descripción}{La conexión TCP se envuelve en un canal seguro estándar de la plataforma antes de enviar el primer mensaje del protocolo. Atiende ESC-06 en su parte principal: lo que se captura son bytes cifrados, sin importar qué mensaje sea. Se elige frente a cifrar mensaje por mensaje dentro del protocolo, que obligaría a diseñar el manejo de claves a mano, y frente a cifrar solo las credenciales, que dejaría en claro el chat de menores (CRN-05) y el token de cada jugada. Con esto se cierra Q-09.}
+\parte{Descripción}{La conexión TCP se envuelve en un canal seguro estándar de la plataforma antes de enviar el primer mensaje del protocolo. Atiende QAS-06 en su parte principal: lo que se captura son bytes cifrados, sin importar qué mensaje sea. Se elige frente a cifrar mensaje por mensaje dentro del protocolo, que obligaría a diseñar el manejo de claves a mano, y frente a cifrar solo las credenciales, que dejaría en claro el chat de menores (CRN-05) y el token de cada jugada. Con esto se cierra Q-09.}
 \parte{Efectos}{El protocolo trabaja siempre sobre un canal ya protegido, así que la delimitación y el versionado no tienen que preocuparse por la confidencialidad. Agrega un costo por conexión, en el establecimiento, y otro por mensaje, que se mide en la iteración~4. Obliga a gestionar el certificado del servidor y a que el cliente lo verifique.}
-\parte{Trazabilidad}{DRV-02. ESC-06 (ASR-03), ESC-01. CU-01, CU-20, CU-21, CU-28. CON-02, CON-03, CON-01, CON-16. CRN-22, CRN-05. Q-09. STK-15, STK-02.}
+\parte{Trazabilidad}{DRV-02. QAS-06 (ASR-03), QAS-01. CU-01, CU-20, CU-21, CU-28. CON-02, CON-03, CON-01, CON-16. CRN-22, CRN-05. Q-09. STK-15, STK-02.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -201,9 +201,9 @@ CON-01, CON-16 & Bajo & No eligen entre alternativas, pero abaratan una: la plat
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Patrón de protocolo, con táctica de seguridad: limitar la exposición.}
-\parte{Descripción}{Cada mensaje viaja precedido de su longitud, y el servicio rechaza cualquiera que declare más del máximo permitido. Atiende CRN-11, que es lo que CON-03 dejó sin resolver, y contribuye a ESC-05 porque un mensaje truncado o con longitud imposible se descarta antes de interpretarse. Se elige frente a delimitar con un carácter separador, que obliga a escapar el contenido y se rompe con texto de chat en otros idiomas.}
+\parte{Descripción}{Cada mensaje viaja precedido de su longitud, y el servicio rechaza cualquiera que declare más del máximo permitido. Atiende CRN-11, que es lo que CON-03 dejó sin resolver, y contribuye a QAS-05 porque un mensaje truncado o con longitud imposible se descarta antes de interpretarse. Se elige frente a delimitar con un carácter separador, que obliga a escapar el contenido y se rompe con texto de chat en otros idiomas.}
 \parte{Efectos}{El servicio puede leer mensajes completos sin adivinar dónde terminan. El tamaño máximo protege la memoria del servidor frente a un cliente que declare un mensaje enorme, y fija un tope al mensaje de turno de CD-11. Obliga a decidir ese máximo antes de construir, porque es parte del formato.}
-\parte{Trazabilidad}{DRV-02. CD-07, CD-11. ESC-05, ESC-06. CU-20, CU-21, CU-28. CON-02, CON-03. CRN-11, CRN-23. STK-05, STK-15.}
+\parte{Trazabilidad}{DRV-02. CD-07, CD-11. QAS-05, QAS-06. CU-20, CU-21, CU-28. CON-02, CON-03. CRN-11, CRN-23. STK-05, STK-15.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -213,9 +213,9 @@ CON-01, CON-16 & Bajo & No eligen entre alternativas, pero abaratan una: la plat
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Patrón de protocolo.}
-\parte{Descripción}{Cada mensaje lleva en su cabecera la versión del protocolo y su tipo. Si la versión no es compatible, el servidor responde con un mensaje de versión no soportada y cierra, en lugar de intentar interpretar el contenido. Atiende CRN-11 y la parte de ESC-05 que envía mensajes de una versión anterior. Se elige frente a deducir la versión del contenido, que es justo lo que un cliente alterado puede manipular.}
+\parte{Descripción}{Cada mensaje lleva en su cabecera la versión del protocolo y su tipo. Si la versión no es compatible, el servidor responde con un mensaje de versión no soportada y cierra, en lugar de intentar interpretar el contenido. Atiende CRN-11 y la parte de QAS-05 que envía mensajes de una versión anterior. Se elige frente a deducir la versión del contenido, que es justo lo que un cliente alterado puede manipular.}
 \parte{Efectos}{Permite desplegar clientes y servidor en momentos distintos durante las 14 semanas, siempre que el cambio de versión sea explícito. Obliga a llevar la cuenta de qué versión entiende cada cliente y a decidir, en cada cambio, si se acepta la anterior. El campo de versión ocupa espacio en todos los mensajes.}
-\parte{Trazabilidad}{DRV-02, DRV-08. CD-07. ESC-05, ESC-06. CU-20, CU-21. CON-03, CON-13, CON-14. CRN-11. STK-05, STK-07.}
+\parte{Trazabilidad}{DRV-02, DRV-08. CD-07. QAS-05, QAS-06. CU-20, CU-21. CON-03, CON-13, CON-14. CRN-11. STK-05, STK-07.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -225,9 +225,9 @@ CON-01, CON-16 & Bajo & No eligen entre alternativas, pero abaratan una: la plat
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Patrón de protocolo, con táctica de seguridad: autenticar actores.}
-\parte{Descripción}{Al abrir el canal, cliente y servidor acuerdan la versión y el cliente presenta su token de sesión, si ya tiene uno. El mensaje de apertura admite desde ahora un identificador de sesión existente, aunque lo que se haga con él, reasociar una partida en curso, se decida en una iteración posterior. Atiende ESC-06 en la parte de autenticidad y prepara ESC-08. Se elige frente a un apretón de manos mínimo que solo acuerde la versión, que obligaría a cambiarlo después y a redesplegar todos los clientes.}
-\parte{Efectos}{Todo lo que llega después del apretón de manos pertenece a una sesión conocida, lo que permite a CD-08 autorizar cada mensaje sin repetir la identificación. Deja preparado el camino de ESC-08 sin implementarlo. Agrega un viaje de ida y vuelta al abrir la conexión, que no está dentro del turno y no afecta a ESC-01.}
-\parte{Trazabilidad}{DRV-02, DRV-01. CD-08. ESC-06, ESC-08. CU-01, CU-10, CU-26. CON-03, REQ-03. CRN-22, CRN-06. Q-03. STK-15, STK-05.}
+\parte{Descripción}{Al abrir el canal, cliente y servidor acuerdan la versión y el cliente presenta su token de sesión, si ya tiene uno. El mensaje de apertura admite desde ahora un identificador de sesión existente, aunque lo que se haga con él, reasociar una partida en curso, se decida en una iteración posterior. Atiende QAS-06 en la parte de autenticidad y prepara QAS-08. Se elige frente a un apretón de manos mínimo que solo acuerde la versión, que obligaría a cambiarlo después y a redesplegar todos los clientes.}
+\parte{Efectos}{Todo lo que llega después del apretón de manos pertenece a una sesión conocida, lo que permite a CD-08 autorizar cada mensaje sin repetir la identificación. Deja preparado el camino de QAS-08 sin implementarlo. Agrega un viaje de ida y vuelta al abrir la conexión, que no está dentro del turno y no afecta a QAS-01.}
+\parte{Trazabilidad}{DRV-02, DRV-01. CD-08. QAS-06, QAS-08. CU-01, CU-10, CU-26. CON-03, REQ-03. CRN-22, CRN-06. Q-03. STK-15, STK-05.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -237,9 +237,9 @@ CON-01, CON-16 & Bajo & No eligen entre alternativas, pero abaratan una: la plat
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Táctica de seguridad: resistir ataques de repetición.}
-\parte{Descripción}{El token de sesión vale solo dentro del canal en el que se estableció, tiene vencimiento y va acompañado de un número de mensaje creciente, de modo que un mensaje repetido se reconoce y se descarta. Atiende la segunda mitad de la medida de ESC-06, los 50 reenvíos rechazados. Se elige frente a confiar solo en el cifrado, que impide leer pero no impide repetir lo capturado desde el mismo equipo.}
+\parte{Descripción}{El token de sesión vale solo dentro del canal en el que se estableció, tiene vencimiento y va acompañado de un número de mensaje creciente, de modo que un mensaje repetido se reconoce y se descarta. Atiende la segunda mitad de la medida de QAS-06, los 50 reenvíos rechazados. Se elige frente a confiar solo en el cifrado, que impide leer pero no impide repetir lo capturado desde el mismo equipo.}
 \parte{Efectos}{Obliga al servicio de estado a llevar el último número de mensaje visto por sesión, que encaja con el número de jugada que CU-20 y CU-21 ya usan. Un jugador que reconecta necesita un token válido, lo que se articula con CD-15. Los reenvíos rechazados se registran con CD-09.}
-\parte{Trazabilidad}{DRV-02, DRV-01. CD-08, CD-09, CD-15. ESC-06, ESC-05. CU-01, CU-10, CU-20, CU-21 (FA-07). REQ-03. CRN-22, CRN-23. STK-15.}
+\parte{Trazabilidad}{DRV-02, DRV-01. CD-08, CD-09, CD-15. QAS-06, QAS-05. CU-01, CU-10, CU-20, CU-21 (FA-07). REQ-03. CRN-22, CRN-23. STK-15.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -249,7 +249,7 @@ CON-01, CON-16 & Bajo & No eligen entre alternativas, pero abaratan una: la plat
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Patrón de protocolo.}
-\parte{Descripción}{Cada tipo de mensaje tiene un esquema declarado, con sus campos y sus tipos, y el servicio rechaza lo que no encaje antes de entregarlo a cualquier otro servicio. Atiende ESC-05 en la parte de los mensajes mal formados y hace posible CD-07 sin repartir comprobaciones por todo el servidor. Se elige frente a una serialización libre en la que cada componente interprete lo que reciba, que dejaría la validación a criterio de quien la escriba.}
+\parte{Descripción}{Cada tipo de mensaje tiene un esquema declarado, con sus campos y sus tipos, y el servicio rechaza lo que no encaje antes de entregarlo a cualquier otro servicio. Atiende QAS-05 en la parte de los mensajes mal formados y hace posible CD-07 sin repartir comprobaciones por todo el servidor. Se elige frente a una serialización libre en la que cada componente interprete lo que reciba, que dejaría la validación a criterio de quien la escriba.}
 \parte{Efectos}{Los nombres de mensaje que los casos de uso ya usan, como PLACE\_WALL\_REQUEST o CHAT\_SEND\_REQUEST, se convierten en esquemas versionados. El texto viaja en Unicode, lo que la iteración~7 necesita. Añadir un campo obliga a pasar por el versionado de CD-14.}
-\parte{Trazabilidad}{DRV-02, DRV-07. CD-07, CD-13, CD-14. ESC-05, ESC-06, ESC-11. CU-20, CU-21, CU-28. CON-03, CON-05. CRN-11, CRN-16. STK-05, STK-11.}
+\parte{Trazabilidad}{DRV-02, DRV-07. CD-07, CD-13, CD-14. QAS-05, QAS-06, QAS-11. CU-20, CU-21, CU-28. CON-03, CON-05. CRN-11, CRN-16. STK-05, STK-11.}
 \end{tabla}

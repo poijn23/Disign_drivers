@@ -9,10 +9,10 @@
 \fichacab
 \parte{Driver}{DRV-08 --- Plazo de 14 semanas con un equipo de dos personas: rebanadas verticales y puntos de variación acotados.}
 \parte{Enunciado}{La arquitectura la construye un equipo de dos personas en 14 semanas, por rebanadas verticales que cada semana den un incremento funcional y demostrable, con una regresión sin interfaz, y con el núcleo jugable y el modo en línea antes que lo opcional. Lo que llegará con el proyecto avanzado se aísla en puntos de variación concretos, y solo en ellos.}
-\parte{Por qué le toca este turno}{Suma 8 de 20 y es el último con iteración propia porque no cambia qué componentes existen. Aun así ha estado presente en todas: la exigencia de incremento demostrable es lo que dio forma a cada objetivo. Lo que queda por decidir son los puntos de variación, y el primero es el más caro y el más probable: el oponente.}
+\parte{Por qué le toca este turno}{Suma 8 de 20 y es el último con iteración propia porque no cambia qué componentes existen. Lo que queda por decidir son los puntos de variación, y el primero es el más caro y el más probable: el oponente.}
 \parte{Qué decide esta iteración}{Cómo se aísla al oponente controlado por IA para que se pueda recortar sin tocar el núcleo, y qué forma tiene un punto de variación en este proyecto.}
 \parte{Decisiones ya tomadas}{DEC-01 a DEC-03 y lo decidido en las siete iteraciones anteriores. Pesan CD-01 y CD-02, que ponen al servidor a decidir cada jugada, y CD-22, que da la regresión sin interfaz con la que se comprueba que un recorte no rompió nada.}
-\parte{Qué no decide}{Los otros dos puntos de variación: el extremo de red y el modo de despliegue (ESC-14, Q-02) y la marca con los recursos de terceros (ESC-15, Q-07 y CON-18). Tienen la misma forma y quedan para iteraciones posteriores. Tampoco decide Q-01: si habrá IA o no lo deciden STK-04 y STK-06.}
+\parte{Qué no decide}{Los otros dos puntos de variación: el extremo de red y el modo de despliegue (QAS-14, Q-02) y la marca con los recursos de terceros (QAS-15, Q-07 y CON-18). Tienen la misma forma y quedan para iteraciones posteriores. Tampoco decide Q-01: si habrá IA o no lo deciden STK-04 y STK-06.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -26,7 +26,7 @@ Del conjunto de la sección~\ref{sec:asr}, estos son los ASR que DRV-08 agrupa y
 \hline
 \filacab \cab{ASR} & \cab{Qué debe cumplir la arquitectura} & \cab{Prioridad} & \cab{Papel en esta iteración} \\ \hline
 \endhead
-ASR-15 & La solución se construye en 14 semanas, con un incremento auditable cada semana, por un equipo de dos personas, y lo que no es esencial se puede recortar sin tocar lo esencial. & Alta & Objetivo. Su medida es ESC-13. \\ \hline
+ASR-15 & La solución se construye en 14 semanas, con un incremento auditable cada semana, por un equipo de dos personas, y lo que no es esencial se puede recortar sin tocar lo esencial. & Alta & Objetivo. Su medida es QAS-13. \\ \hline
 ASR-10 & Un jugador se enfrenta a un rival controlado por el servidor, con niveles y sugerencias, dentro del mismo presupuesto por jugada. & Media & Condición: la IA existe como un participante que se puede retirar. \\ \hline
 ASR-07 & Reservado: partidas en red local con el modo en línea ya entregado. & Reservado & Fuera de esta iteración: solo si Q-02 se resuelve a favor. \\ \hline
 \end{tabla}
@@ -42,7 +42,7 @@ CON-13 y CRN-07, con STK-03 y STK-04. Obliga a que lo opcional se pueda soltar. 
 OBJ-25 & Una decisión que llega tarde no obliga a rehacer lo construido. &
 CRN-14, con STK-04 y STK-07. Cuatro preguntas abiertas caerán con el proyecto avanzado. \\ \hline
 OBJ-04 & Cada semana hay un incremento funcional y demostrable. &
-CON-14, con STK-16. Es el objetivo que ha dado forma a todas las iteraciones. \\ \hline
+CON-14, con STK-16. \\ \hline
 OBJ-26 & Abstraer solo lo que tiene alta probabilidad de cambiar. &
 TEN-04. Cada punto de extensión cuesta tiempo del mismo plazo que protege. \\ \hline
 \end{tabla}
@@ -69,11 +69,11 @@ Distingue las partidas clasificatorias de las que no lo son (RN-03), y las de IA
 \hline
 \filacab \cab{Escenario} & \cab{Atributo} & \cab{Medida} \\ \hline
 \endhead
-ESC-13 & Mantenibilidad: modularidad &
+QAS-13 & Mantenibilidad: modularidad &
 El recorte de la IA en la semana 10 cuesta menos de 1 día de trabajo, se modifican 0 archivos del motor de reglas, del servidor de partidas y de la capa de red, el 100~\% de las pruebas automáticas del núcleo y del modo en línea pasa, el incremento se entrega en su fecha y ninguna opción de la interfaz lleva a una función que ya no existe. \\ \hline
-ESC-17 & Mantenibilidad: capacidad de prueba &
+QAS-17 & Mantenibilidad: capacidad de prueba &
 Condición. La regresión sin interfaz es lo que permite afirmar que el recorte no rompió nada. \\ \hline
-ESC-01 & Desempeño &
+QAS-01 & Desempeño &
 Condición. Si la IA existe, su tiempo de cálculo ocupa el mismo presupuesto por jugada que un jugador humano. \\ \hline
 \end{tabla}
 
@@ -132,16 +132,16 @@ Q-02, Q-07, Q-08 & Los otros puntos de variación y las variantes de reglas. Com
 \hline
 \filacab \cab{Entrada} & \cab{Peso} & \cab{Por qué pesa lo que pesa} & \cab{Decisión} \\ \hline
 \endhead
-ESC-13 & Alto & Es la medida del objetivo y fija el tope de costo del recorte: un día y 0 archivos del núcleo. & Se atiende \\ \hline
+QAS-13 & Alto & Es la medida del objetivo y fija el tope de costo del recorte: un día y 0 archivos del núcleo. & Se atiende \\ \hline
 CU-27 & Alto & Es todo lo que habría que recortar, y describe cuánto alcanza: menú, partida, motor y progresión. & Se atiende \\ \hline
 CRN-07, CRN-14 & Alto & Son el origen del driver: el alcance puede no caber y la decisión llega tarde. & Se atiende \\ \hline
 TEN-04 & Alto & Limita la solución: la abstracción tiene que ser barata, o el remedio consume el plazo que protege. & Se atiende \\ \hline
 CON-13, CON-14 & Alto & Fijan el plazo y la forma de entrega en la que el recorte tiene que caber. & Se atiende \\ \hline
 CU-17, CU-18, CU-19, CU-25 & Medio & Definen lo que tiene que seguir funcionando igual después del recorte. & Se atiende como condición \\ \hline
-ESC-17, CD-22 & Medio & Son la evidencia de que nada se rompió; ya existen y aquí se usan. & Se atiende como supuesto \\ \hline
-ESC-01 & Medio, como límite & Si la IA existe, su cálculo entra en el presupuesto por jugada ya repartido. & Se atiende como restricción \\ \hline
+QAS-17, CD-22 & Medio & Son la evidencia de que nada se rompió; ya existen y aquí se usan. & Se atiende como supuesto \\ \hline
+QAS-01 & Medio, como límite & Si la IA existe, su cálculo entra en el presupuesto por jugada ya repartido. & Se atiende como restricción \\ \hline
 Q-01 & Bajo & No se resuelve: la iteración vuelve baratas las dos respuestas. & Se atiende como condición \\ \hline
-ESC-14, ESC-15 & Bajo aquí & Son los otros dos puntos de variación, con la misma forma y otro elemento. & Se difieren a iteraciones posteriores \\ \hline
+QAS-14, QAS-15 & Bajo aquí & Son los otros dos puntos de variación, con la misma forma y otro elemento. & Se difieren a iteraciones posteriores \\ \hline
 \end{tabla}
 
 \subsubsection*{Objetivo de la iteración}
@@ -151,8 +151,8 @@ ESC-14, ESC-15 & Bajo aquí & Son los otros dos puntos de variación, con la mis
 \parte{Objetivo}{Que el oponente controlado por IA se pueda retirar del alcance sin tocar el núcleo jugable ni el modo en línea.}
 \parte{ASR que satisface}{ASR-15, con ASR-10 como condición.}
 \parte{Driver que cubre}{DRV-08, en su primer punto de variación.}
-\parte{Medida}{La de ESC-13: el recorte cuesta menos de 1 día de trabajo, se modifican 0 archivos del motor de reglas, del servidor de partidas y de la capa de red, el 100~\% de las pruebas automáticas del núcleo y del modo en línea pasa, el incremento de esa semana se entrega en su fecha y ninguna opción de la interfaz lleva a una pantalla rota.}
-\parte{Límite que respeta}{TEN-04 y ESC-01. La abstracción tiene que costar poco de construir, y si la IA se queda, su tiempo de cálculo cabe en el presupuesto por jugada de la iteración~4.}
+\parte{Medida}{La de QAS-13: el recorte cuesta menos de 1 día de trabajo, se modifican 0 archivos del motor de reglas, del servidor de partidas y de la capa de red, el 100~\% de las pruebas automáticas del núcleo y del modo en línea pasa, el incremento de esa semana se entrega en su fecha y ninguna opción de la interfaz lleva a una pantalla rota.}
+\parte{Límite que respeta}{TEN-04 y QAS-01. La abstracción tiene que costar poco de construir, y si la IA se queda, su tiempo de cálculo cabe en el presupuesto por jugada de la iteración~4.}
 \parte{Incremento que produce}{Una partida contra la IA jugada de principio a fin, y en una rama aparte el ensayo del recorte, con el registro de las horas empleadas, la lista de archivos modificados y la regresión ejecutada. La demostración es doble: el juego funciona con IA y funciona igual sin ella.}
 \parte{Criterio de éxito}{La iteración termina cuando el ensayo del recorte cumple las cinco cifras de la medida.}
 \end{tabla}
@@ -171,7 +171,7 @@ ESC-14, ESC-15 & Bajo aquí & Son los otros dos puntos de variación, con la mis
 \parte{Por qué se elige}{Porque la medida del objetivo describe qué pasa cuando este punto se apaga: cuánto cuesta, qué archivos se tocan y qué sigue funcionando. Se elige frente a descomponer el módulo de IA, que es lo que se recorta pero no lo que hace que el recorte sea barato, y frente al servicio de estado de la partida, que precisamente no debe cambiar. Es el primero de los tres puntos de variación porque es el más caro y el que CRN-07 nombra como primer candidato al recorte.}
 \parte{Qué falta decidir sobre él}{Cómo se dirige la partida a un participante que no está al otro lado de una conexión. Dónde se decide que una modalidad existe o no, y cómo desaparece de la interfaz sin dejar opciones muertas. Y hasta dónde llega la abstracción, porque TEN-04 impide abstraer más de lo que tiene alta probabilidad de cambiar.}
 \parte{Evidencia en los casos de uso}{CU-27 dice que el rival lo controla el servidor, lo que confirma que la IA vive donde vive la autoridad, y describe ajustes, niveles, sugerencias y deshacer, que es alcance que solo existe en esa modalidad. CU-25 ya separa las partidas clasificatorias de las demás en su RN-03, así que la frontera de la progresión está trazada. CU-20 y CU-21 no distinguen quién es el rival: resuelven el turno igual, que es lo que hace posible tratar a la IA como un participante más.}
-\parte{Trazabilidad}{DRV-08. DEC-02. CD-01, CD-04, CD-05, CD-21, CD-22. ESC-13, con ESC-17 y ESC-01 como condiciones. CU-27, CU-17, CU-18, CU-19, CU-20, CU-21, CU-25 (RN-03). CON-13, CON-14, REQ-07. CRN-07, CRN-14, CRN-08, CRN-03. TEN-04. Q-01. STK-04, STK-03, STK-07, STK-06.}
+\parte{Trazabilidad}{DRV-08. DEC-02. CD-01, CD-04, CD-05, CD-21, CD-22. QAS-13, con QAS-17 y QAS-01 como condiciones. CU-27, CU-17, CU-18, CU-19, CU-20, CU-21, CU-25 (RN-03). CON-13, CON-14, REQ-07. CRN-07, CRN-14, CRN-08, CRN-03. TEN-04. Q-01. STK-04, STK-03, STK-07, STK-06.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -184,9 +184,9 @@ ESC-14, ESC-15 & Bajo aquí & Son los otros dos puntos de variación, con la mis
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Patrón de diseño: interfaz común para variantes.}
-\parte{Descripción}{La partida se dirige a sus participantes a través de una sola abstracción, que recibe el estado y entrega una jugada, y es indiferente a que detrás haya una conexión o un módulo que calcula. Atiende ESC-13 en su parte más exigente, 0 archivos modificados en el arbitraje: si la partida no sabe qué tipo de rival tiene, retirar uno no la toca. Se elige frente a que el arbitraje pregunte de qué tipo es el rival en cada paso, que repartiría esa condición por todo el servicio y haría del recorte una cacería de condicionales.}
+\parte{Descripción}{La partida se dirige a sus participantes a través de una sola abstracción, que recibe el estado y entrega una jugada, y es indiferente a que detrás haya una conexión o un módulo que calcula. Atiende QAS-13 en su parte más exigente, 0 archivos modificados en el arbitraje: si la partida no sabe qué tipo de rival tiene, retirar uno no la toca. Se elige frente a que el arbitraje pregunte de qué tipo es el rival en cada paso, que repartiría esa condición por todo el servicio y haría del recorte una cacería de condicionales.}
 \parte{Efectos}{El módulo de IA se convierte en un consumidor más del motor (CD-21) y del estado, sin acceso privilegiado. Deja preparado el caso de CU-27 sin decidir Q-01. La abstracción tiene que admitir que un participante tarde en responder, lo que ya ocurre con una persona y encaja con el presupuesto de CD-23.}
-\parte{Trazabilidad}{DRV-08, DRV-01. DEC-02. CD-04, CD-05, CD-21. ESC-13, ESC-01. CU-27, CU-20, CU-21. CON-13, CON-01. CRN-14, CRN-07. TEN-04. Q-01. STK-05, STK-07, STK-04.}
+\parte{Trazabilidad}{DRV-08, DRV-01. DEC-02. CD-04, CD-05, CD-21. QAS-13, QAS-01. CU-27, CU-20, CU-21. CON-13, CON-01. CRN-14, CRN-07. TEN-04. Q-01. STK-05, STK-07, STK-04.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -196,9 +196,9 @@ ESC-14, ESC-15 & Bajo aquí & Son los otros dos puntos de variación, con la mis
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Patrón de configuración, con táctica de modularidad.}
-\parte{Descripción}{Las modalidades disponibles, en línea, sala privada y contra la IA, se declaran en configuración, y la interfaz muestra solo las declaradas. Atiende la última parte de ESC-13, que ninguna opción lleve a una función que ya no existe, y hace que el recorte empiece por un cambio de configuración y no por borrar código. Se elige frente a escribir las opciones en la pantalla, que obliga a modificar la interfaz en cada recorte y a arriesgarse a dejar botones muertos.}
+\parte{Descripción}{Las modalidades disponibles, en línea, sala privada y contra la IA, se declaran en configuración, y la interfaz muestra solo las declaradas. Atiende la última parte de QAS-13, que ninguna opción lleve a una función que ya no existe, y hace que el recorte empiece por un cambio de configuración y no por borrar código. Se elige frente a escribir las opciones en la pantalla, que obliga a modificar la interfaz en cada recorte y a arriesgarse a dejar botones muertos.}
 \parte{Efectos}{El recorte se ensaya en minutos antes de decidirlo, lo que da a STK-04 información real para elegir. La misma declaración sirve para apagar una modalidad en producción si algo falla. Obliga a que la interfaz se construya a partir de la lista y no con opciones fijas.}
-\parte{Trazabilidad}{DRV-08. CD-19, CD-45. ESC-13, ESC-02. CU-27, CU-17, CU-18. CON-13, CON-14, REQ-07. CRN-07, CRN-14. TEN-04. Q-01, Q-02. STK-04, STK-09, STK-01.}
+\parte{Trazabilidad}{DRV-08. CD-19, CD-45. QAS-13, QAS-02. CU-27, CU-17, CU-18. CON-13, CON-14, REQ-07. CRN-07, CRN-14. TEN-04. Q-01, Q-02. STK-04, STK-09, STK-01.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -208,9 +208,9 @@ ESC-14, ESC-15 & Bajo aquí & Son los otros dos puntos de variación, con la mis
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Estilo: dirección de las dependencias.}
-\parte{Descripción}{El módulo de IA depende del motor, del estado y de la abstracción de participante, y ninguno de ellos depende de él. Atiende ESC-13 en la parte de los 0 archivos modificados en el núcleo: lo que nadie usa se puede quitar sin dejar huecos. Se elige frente a dejar que el núcleo llame a la IA para pedirle sugerencias o consejos, que convertiría el recorte en una modificación del núcleo, que es justo lo que la medida prohíbe.}
+\parte{Descripción}{El módulo de IA depende del motor, del estado y de la abstracción de participante, y ninguno de ellos depende de él. Atiende QAS-13 en la parte de los 0 archivos modificados en el núcleo: lo que nadie usa se puede quitar sin dejar huecos. Se elige frente a dejar que el núcleo llame a la IA para pedirle sugerencias o consejos, que convertiría el recorte en una modificación del núcleo, que es justo lo que la medida prohíbe.}
 \parte{Efectos}{Las sugerencias de CU-27 se resuelven pidiendo al motor las jugadas legales y evaluándolas dentro del módulo de IA, no al revés. La regla se aplica igual a los otros dos puntos de variación pendientes, así que fija la forma de todos. Obliga a revisar la dirección de cada dependencia nueva en la revisión semanal.}
-\parte{Trazabilidad}{DRV-08, DRV-05. CD-18, CD-21, CD-45. ESC-13, ESC-17. CU-27, CU-25 (RN-03). CON-13, CON-14. CRN-07, CRN-14, CRN-20, CRN-24. TEN-04. Q-01, Q-02, Q-07. STK-05, STK-07, STK-04.}
+\parte{Trazabilidad}{DRV-08, DRV-05. CD-18, CD-21, CD-45. QAS-13, QAS-17. CU-27, CU-25 (RN-03). CON-13, CON-14. CRN-07, CRN-14, CRN-20, CRN-24. TEN-04. Q-01, Q-02, Q-07. STK-05, STK-07, STK-04.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -220,7 +220,7 @@ ESC-14, ESC-15 & Bajo aquí & Son los otros dos puntos de variación, con la mis
 \begin{tabla}{|L{2.6cm}|Y|}
 \fichacab
 \parte{Estilo}{Táctica de proceso con efecto estructural: orden de construcción.}
-\parte{Descripción}{Cada semana se construye una rebanada que atraviesa interfaz, protocolo, arbitraje y datos hasta dar algo jugable, y el incremento se cierra ejecutando la regresión sin interfaz de CD-22 junto con la medida del escenario que tocó esa semana. Atiende ESC-13 en la parte de entregar el incremento en su fecha y en la de demostrar que el núcleo y el modo en línea siguen funcionando. Se elige frente a construir capa por capa, que deja lo demostrable para el final y hace que un recorte tardío no tenga con qué compararse.}
-\parte{Efectos}{Da sentido al criterio de éxito que todas las iteraciones anteriores usaron: cada una terminó en algo que se puede enseñar y medir. Las medidas de los escenarios se convierten en la batería de pruebas del proyecto, que es la evidencia que STK-16 audita cada semana.}
-\parte{Trazabilidad}{DRV-08, DRV-05. CD-22, CD-27, CD-44. ESC-13, ESC-17. CU-20, CU-21, CU-27. CON-13, CON-14. CRN-07, CRN-08, CRN-17. TEN-04. STK-03, STK-16, STK-04, STK-10.}
+\parte{Descripción}{Cada semana se construye una rebanada que atraviesa interfaz, protocolo, arbitraje y datos hasta dar algo jugable, y el incremento se cierra ejecutando la regresión sin interfaz de CD-22 junto con la medida del escenario que tocó esa semana. Atiende QAS-13 en la parte de entregar el incremento en su fecha y en la de demostrar que el núcleo y el modo en línea siguen funcionando. Se elige frente a construir capa por capa, que deja lo demostrable para el final y hace que un recorte tardío no tenga con qué compararse.}
+\parte{Efectos}{Las medidas de los escenarios se convierten en la batería de pruebas del proyecto, que es la evidencia que STK-16 audita cada semana.}
+\parte{Trazabilidad}{DRV-08, DRV-05. CD-22, CD-27, CD-44. QAS-13, QAS-17. CU-20, CU-21, CU-27. CON-13, CON-14. CRN-07, CRN-08, CRN-17. TEN-04. STK-03, STK-16, STK-04, STK-10.}
 \end{tabla}

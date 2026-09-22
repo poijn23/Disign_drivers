@@ -12,7 +12,7 @@ Este documento aplica los primeros cuatro pasos del método ADD a Bastion. Cada 
 \filacab \cab{Documento} & \cab{Qué aporta a estas iteraciones} \\ \hline
 \endhead
 Análisis de contexto, escenarios de calidad y drivers &
-Objetivos de diseño, stakeholders (STK), concerns (CRN), dependencias (DEP), restricciones (CON) y requisitos impuestos (REQ), tensiones (TEN), preguntas abiertas (Q), características de calidad (QA) y escenarios (ESC) con su Utility Tree. Sus ASR y sus drivers son un antecedente: este documento los vuelve a identificar en las secciones~\ref{sec:asr} y~\ref{sec:priorizacion}, y donde difieren, mandan esas secciones. \\ \hline
+Objetivos de diseño, stakeholders (STK), concerns (CRN), dependencias (DEP), restricciones (CON) y requisitos impuestos (REQ), tensiones (TEN), preguntas abiertas (Q), características de calidad (QA) y escenarios (QAS) con su Utility Tree. Sus ASR y sus drivers son un antecedente: este documento los vuelve a identificar en las secciones~\ref{sec:asr} y~\ref{sec:priorizacion}. \\ \hline
 Casos de uso para Bastion, versión 1.0 &
 Los requisitos funcionales primarios (CU), con sus flujos, precondiciones, reglas de negocio (RN), mensajes del protocolo y entidades de datos. Es la fuente de lo que el sistema tiene que hacer, frente a los drivers, que dicen qué lo vuelve difícil. \\ \hline
 \end{tabla}
@@ -22,7 +22,7 @@ Los identificadores se conservan tal como aparecen en esos documentos, de modo q
 % ------------------------------------------------------------
 \subsection{Orden del documento}
 
-Las secciones se construyen en cadena, y cada una depende solo de las anteriores. Un cambio se propaga hacia adelante y nunca hacia atrás: si una sección posterior encuentra algo que no encaja, lo que se revisa es ella, no la sección de la que parte.
+Las secciones se construyen en cadena, y cada una depende solo de las anteriores.
 
 \begin{tabla}{|L{3.2cm}|Y|}
 \hline
@@ -57,7 +57,7 @@ Los pasos 5 a 7 del método, instanciar los elementos, definir las interfaces y 
 % ------------------------------------------------------------
 \subsection{Estructura fija de cada iteración}\label{sec:metodo:plantilla}
 
-Todas las iteraciones tienen las mismas cinco subsecciones, en el mismo orden, y terminan en el paso~4. La estructura es fija a propósito: si una entrada cambia, si un escenario se mide de otra forma o si una pregunta abierta se resuelve, el cambio queda dentro de una subsección de una iteración y no obliga a reescribir el resto del documento.
+Todas las iteraciones tienen las mismas cinco subsecciones, en el mismo orden, y terminan en el paso~4.
 
 Cada iteración tiene además \textbf{un solo objetivo y un solo elemento a descomponer}, y termina en un incremento que se puede demostrar y medir. Un objetivo que necesita dos medidas distintas para comprobarse son en realidad dos objetivos, y se parten en dos iteraciones; un driver grande ocupa entonces más de una, en el orden que fija la sección~\ref{sec:priorizacion}. Lo que se deja fuera no se pierde: se nombra la iteración que lo recoge.
 
