@@ -7,11 +7,11 @@
 
 \begin{tabla}{|L{3.0cm}|Y|}
 \fichacab
-\parte{Driver}{DRV-01 --- Servidor autoritativo sobre el estado de la partida.}
-\parte{Enunciado}{El servidor es la única autoridad sobre cada partida en línea: el cliente propone, previsualiza y muestra; el servidor decide y conserva el estado vigente en su memoria, con independencia de las conexiones y de la base de datos.}
-\parte{Por qué es la primera}{Obtiene la calificación máxima en los tres criterios de la sección~\ref{sec:priorizacion}: cambia cliente, servidor, protocolo y capa de datos a la vez; es la decisión que CRN-10 llama la más cara de cambiar; y habilita a DRV-02, DRV-03, DRV-04 y DRV-06.}
+\parte{Driver}{DRV-01 --- Servidor autoritativo.}
+\parte{Enunciado}{El servidor arbitra cada partida en línea y es la única autoridad sobre su estado: el cliente propone y presenta; el servidor decide y conserva el estado vigente, con independencia de las conexiones y de la base de datos.}
+\parte{Por qué es la primera}{Obtiene la calificación máxima en los cuatro criterios de la sección~\ref{sec:priorizacion}: agrupa cuatro ASR prioritarios, entre ellos ASR-08 y ASR-02, que abren el orden de la sección~\ref{sec:asr}; cambia cliente, servidor, protocolo y capa de datos a la vez; es la decisión que CRN-10 llama la más cara de cambiar; y habilita a DRV-02, DRV-03, DRV-04 y DRV-06.}
 \parte{Qué decide esta iteración}{Quién produce y conserva el estado vigente de una partida en curso, y dónde vive mientras la partida dura. Nada más: es el único objetivo del paso~2 y se comprueba con una sola medida, la de ESC-05.}
-\parte{Decisiones ya tomadas}{El equipo ya fijó el modelo cliente-servidor basado en servicios, que no se confía en el cliente y que toda la lógica del juego se ejecuta en el servidor, y que una partida en línea exige conexión con la base de datos. Esta iteración no las vuelve a discutir: las toma como entradas y desarrolla sus consecuencias (DEC-01 a DEC-03 del paso~1).}
+\parte{Decisiones ya tomadas}{El equipo ya fijó el modelo cliente-servidor basado en servicios, que no se confía en el cliente y que toda la lógica del juego se ejecuta en el servidor, y que una partida en línea exige conexión con la base de datos. Esta iteración no las vuelve a discutir: las toma como entradas y desarrolla sus consecuencias (DEC-01 a DEC-03, registradas en la sección~\ref{sec:asr}).}
 \parte{Qué no decide}{Las otras dos medidas de DRV-01 tienen iteración propia porque dependen de otros elementos: la supervivencia a una desconexión (ESC-08) se decide en una iteración posterior, sobre la sesión de partida, y el comportamiento ante una caída de la base de datos (ESC-09) en la iteración~5, sobre el servicio de acceso a datos. Quedan fuera también el protocolo (iteración~2), el motor de reglas (iteración~3) y el reparto del segundo (iteración~4). No resuelve Q-01, Q-02 ni Q-09.}
 \end{tabla}
 
@@ -20,6 +20,21 @@
 
 Se revisan las cinco entradas del método y se listan las que tienen algo que ver con el driver. Las demás siguen siendo válidas, pero no dicen nada sobre dónde vive el estado de una partida.
 
+\subsubsection*{ASR que agrupa el driver}
+
+Del conjunto de la sección~\ref{sec:asr}, estos son los ASR que DRV-01 agrupa y el papel que cumple cada uno en esta iteración.
+
+\begin{tabla}{|L{1.4cm}|Y|L{1.7cm}|L{3.6cm}|}
+\hline
+\filacab \cab{ASR} & \cab{Qué debe cumplir la arquitectura} & \cab{Prioridad} & \cab{Papel en esta iteración} \\ \hline
+\endhead
+ASR-02 & Un cliente alterado no puede cambiar el estado de una partida ni obtener datos de otro jugador. & Prioritario & Objetivo. Su medida es ESC-05. \\ \hline
+ASR-08 & Dos o más jugadores juegan partidas completas en línea, creadas por emparejamiento o por sala, con turnos y relojes arbitrados por un servidor. & Prioritario & Base del incremento: la partida que CU-20 y CU-21 recorren de principio a fin. \\ \hline
+ASR-04 & Una desconexión no ordenada no deja la partida indefinida: se detecta en menos de 15 segundos y el jugador retoma en menos de 5 si vuelve antes de 2 minutos, incluso desde otro dispositivo. & Prioritario & Pendiente: necesita el protocolo de la iteración~2. Aquí solo se evita atar el estado al socket. \\ \hline
+ASR-05 & Una caída de SQL Server pierde como máximo 5 segundos de jugadas y ningún dato confirmado, y deja constancia de lo perdido. & Prioritario & Se atiende en la iteración~5. Aquí solo se decide que la base de datos no es la copia de trabajo. \\ \hline
+ASR-09 & Una partida en curso se puede observar, incluso sin cuenta, recibiendo el estado con retraso y sin frenar a los jugadores. & Media & Condición en la iteración~4. \\ \hline
+\end{tabla}
+
 \subsubsection*{Objetivos de diseño}
 
 \begin{tabla}{|L{1.5cm}|L{5.0cm}|Y|}
@@ -27,7 +42,7 @@ Se revisan las cinco entradas del método y se listan las que tienen algo que ve
 \filacab \cab{ID} & \cab{Objetivo} & \cab{Origen y qué exige aquí} \\ \hline
 \endhead
 OBJ-01 & Dos jugadores pueden jugar una partida completa en línea, de principio a fin. &
-REQ-01 y CON-06. Es el objetivo que vuelve obligatorio tener un servidor: sin él no hay partida que arbitrar. \\ \hline
+REQ-01. Es el objetivo que vuelve obligatorio tener un servidor: sin él no hay partida que arbitrar. \\ \hline
 OBJ-02 & Nadie puede alterar una partida desde un cliente modificado. &
 CRN-23 y el interés de STK-15. Da por hecho que el cliente es hostil, y eso decide quién tiene la última palabra sobre el estado. \\ \hline
 OBJ-03 & La partida sobrevive a las fallas normales de una red doméstica y a una caída de la base de datos. &
@@ -86,7 +101,7 @@ Exige que cada acción quede ligada a la cuenta que la hizo. Se apoya en el mism
 \hline
 \filacab \cab{ID} & \cab{Restricción} & \cab{Cómo limita esta iteración} \\ \hline
 \endhead
-REQ-01, CON-06 & Modo multijugador en línea obligatorio & La partida no puede resolverse en un solo equipo: hay dos extremos y una red entre ellos. \\ \hline
+REQ-01 & Modo multijugador en línea obligatorio & La partida no puede resolverse en un solo equipo: hay dos extremos y una red entre ellos. \\ \hline
 CON-02 & La comunicación es por TCP & Hay entrega ordenada y confiable, pero también conexiones medio abiertas: una caída de Wi-Fi no cierra el socket. \\ \hline
 CON-03 & Está prohibido usar WebSockets & Lo que un protocolo hereda normalmente lo construye el equipo. Ni la detección de actividad ni la reasociación de sesión vienen dadas. \\ \hline
 CON-17 & La pila TCP/IP varía entre entornos & Impide confiar en el mecanismo del sistema operativo para detectar la caída: tarda horas y no es uniforme. \\ \hline
@@ -176,6 +191,7 @@ CON-13, CON-14 & Bajo & No eligen entre alternativas; descartan las que no se pu
 \begin{tabla}{|L{3.0cm}|Y|}
 \fichacab
 \parte{Objetivo}{Que el servidor sea la única autoridad sobre el estado de una partida en curso: ningún mensaje de un cliente, alterado o no, cambia el estado si no es una jugada legal del participante a quien le toca el turno.}
+\parte{ASR que satisface}{ASR-02, sobre la base de ASR-08: la partida en línea arbitrada es lo que el incremento recorre, y la autoridad del servidor es lo que la medida comprueba.}
 \parte{Driver que cubre}{DRV-01, en lo que hace a la autoridad y al estado vigente.}
 \parte{Medida}{La de ESC-05: con 200 mensajes inválidos de un cliente modificado, 50 al azar, el 100~\% se rechaza, el estado es idéntico antes y después, 0 respuestas llevan datos del rival y el 100~\% de los intentos queda registrado con cuenta y hora.}
 \parte{Límite que respeta}{ESC-01. Ninguna decisión de esta iteración puede impedir que una jugada se responda en menos de un segundo; el reparto del presupuesto se decide en la iteración~4.}
@@ -200,7 +216,7 @@ Este es el elemento sobre el que trabaja la iteración. La ficha dice qué abarc
 \parte{Por qué se elige}{No por ser un módulo del sistema, sino porque la medida del objetivo depende de él: ESC-05 exige que el estado de la partida sea idéntico antes y después de 200 mensajes inválidos, y eso solo se puede afirmar de algo que tenga un dueño único y conocido. Se elige frente a descomponer el sistema completo o el servidor entero, que arrastrarían cuentas, tienda, chat y emparejamiento a una decisión de la que ninguno depende; y frente a descomponer el cliente, que es consecuencia y no causa, porque mientras no se sepa quién decide una jugada no se puede decir qué le toca a él.}
 \parte{Qué falta decidir sobre él}{Cómo se mantiene: no está establecido si el estado vigente vive en la memoria del servidor, en la base de datos o repartido entre los clientes. Cómo se produce cada cambio: no está establecido quién comprueba el turno, el número de jugada y la legalidad antes de que el estado cambie, ni qué ocurre si dos mensajes llegan a la vez para la misma partida. Esas decisiones cambian a la vez el cliente, el servidor y el protocolo, porque determinan si un mensaje es una propuesta o un hecho consumado, y son las más caras de revertir (CRN-10).}
 \parte{Evidencia en los casos de uso}{CU-21 reconstruye el tablero a partir de las Jugada registradas (paso 12) y confirma una transacción antes de notificar (pasos 15 a 19), sin decir de dónde sale el tablero con el que valida. CU-26 recupera todas las Jugada desde la base de datos al reconectar (paso 9), lo que solo es necesario si el estado no está ya en memoria. CU-20, CU-21, CU-25 y CU-26 exigen en PRE-04 conexión disponible con la base de datos, que DEC-03 mantiene. Y CU-21 resalta los surcos válidos (paso 3) y muestra el efecto del muro sobre el camino más corto (paso 5), cálculos que con DEC-02 tiene que entregar este servicio.}
-\parte{Trazabilidad}{DRV-01. DEC-01, DEC-02, DEC-03. ESC-05, con ESC-01 como límite. CU-20, CU-21, CU-22, CU-23, CU-24, CU-25, CU-26. REQ-01, CON-06, CON-04. CRN-10, CRN-23, CRN-02. STK-05, STK-15, STK-01.}
+\parte{Trazabilidad}{DRV-01. DEC-01, DEC-02, DEC-03. ESC-05, con ESC-01 como límite. CU-20, CU-21, CU-22, CU-23, CU-24, CU-25, CU-26. REQ-01, CON-04. CRN-10, CRN-23, CRN-02. STK-05, STK-15, STK-01.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -217,7 +233,7 @@ Estos son los conceptos de diseño con los que se descompone la gestión del est
 \parte{Estilo}{Estilo arquitectónico.}
 \parte{Descripción}{El cliente pide y presenta; el servidor decide. Atiende ESC-05 porque un mensaje del cliente es una propuesta y no un hecho: lo que cambia el estado es la decisión del servidor. Se elige frente al cliente autoritativo con servidor retransmisor y frente a la arquitectura entre pares, que cuestan menos latencia pero dejan el estado en manos de un cliente que se supone hostil (CRN-23). El estilo, además, ya está fijado por DEC-01.}
 \parte{Efectos}{Cada jugada cuesta un viaje completo de red, que consume presupuesto de ESC-01. El servidor necesita el motor de reglas completo. El cliente queda reducido a presentación y entrada, y su versión deja de ser relevante para la corrección de la partida.}
-\parte{Trazabilidad}{DRV-01. DEC-01, DEC-02. ESC-05 (ASR-02), con ESC-01 como límite. CU-20, CU-21. REQ-01, CON-06. CRN-10, CRN-23. STK-05, STK-15, STK-10.}
+\parte{Trazabilidad}{DRV-01. DEC-01, DEC-02. ESC-05 (ASR-02), con ESC-01 como límite. CU-20, CU-21. REQ-01. CRN-10, CRN-23. STK-05, STK-15, STK-10.}
 \end{tabla}
 
 % ------------------------------------------------------------
@@ -337,5 +353,5 @@ Estos son los conceptos de diseño con los que se descompone la gestión del est
 \parte{Estilo}{Táctica de desempeño: limitar el trabajo, con origen en DEC-02.}
 \parte{Descripción}{Con la notificación de turno viajan las casillas legales, los surcos válidos y el efecto de cada muro sobre el camino más corto. Es lo que sustituye a la validación previa en el cliente que DEC-02 descarta: la interfaz resalta y previsualiza con datos que ya recibió, sin calcular nada y sin volver a consultar mientras el jugador decide. Se elige frente a preguntar al servidor cada vez que el jugador mueve el muro por el tablero, que multiplicaría los viajes dentro del turno y rompería ESC-01.}
 \parte{Efectos}{Aumenta el tamaño del mensaje de turno, con su costo para el protocolo de la iteración~2 y para el presupuesto de la~4. Mantiene CU-20 y CU-21 tal como están escritos de cara al jugador. Obliga a que el motor de reglas sepa enumerar las jugadas legales y explicar por qué una no lo es, que es una condición para la iteración~3 y para ESC-02.}
-\parte{Trazabilidad}{DEC-02. DRV-01, DRV-05. ESC-01, ESC-02, ESC-05. CU-20 (pasos 1 a 3), CU-21 (pasos 3 a 5, FA-02). CON-12. CRN-01, CRN-02. STK-01, STK-09.}
+\parte{Trazabilidad}{DEC-02. DRV-01, DRV-05. ESC-01, ESC-02, ESC-05. CU-20 (pasos 1 a 3), CU-21 (pasos 3 a 5, FA-02). REQ-07. CRN-01, CRN-02. STK-01, STK-09.}
 \end{tabla}
