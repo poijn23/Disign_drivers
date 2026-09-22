@@ -9,7 +9,7 @@
 \fichacab
 \parte{Driver}{DRV-04 --- Política explícita de persistencia por tipo de dato.}
 \parte{Enunciado}{Se define de antemano qué se persiste de forma confirmada antes de responder y qué de forma diferida con ventana acotada, con constancia de lo perdido, y la capa de datos hacia SQL Server queda aislada del servicio de partidas.}
-\parte{Por qué le toca este turno}{Suma 10 de 15 y llega después de DRV-03 porque la política solo se puede fijar cuando se sabe cuánto tiempo hay disponible: la iteración~4 asignó los topes y confirmó que la escritura no cabe en el camino de la respuesta. Antes de eso, cualquier política sería una preferencia sin fundamento.}
+\parte{Por qué le toca este turno}{Suma 14 de 20, con dos ASR prioritarios, ASR-05 y ASR-14, y llega después de DRV-03 porque la política solo se puede fijar cuando se sabe cuánto tiempo hay disponible: la iteración~4 asignó los topes y confirmó que la escritura no cabe en el camino de la respuesta. Antes de eso, cualquier política sería una preferencia sin fundamento.}
 \parte{Qué decide esta iteración}{Qué se escribe de forma confirmada, qué se escribe dentro de una ventana acotada, qué se pierde cuando la base de datos se cae y cómo queda constancia de ello.}
 \parte{Decisiones ya tomadas}{DEC-01 a DEC-03 y lo decidido en las cuatro iteraciones anteriores. Pesan DEC-03, que hace de la base de datos una condición para jugar, y CD-06 y CD-10, que pusieron el estado vigente en memoria y la escritura fuera del camino de la respuesta.}
 \parte{Qué no decide}{El esquema de tablas ni el modelo relacional completo, que son diseño de datos y no de arquitectura. Tampoco decide Q-12, qué se guarda de un reporte, que pertenece a la iteración~6.}
@@ -17,6 +17,18 @@
 
 % ------------------------------------------------------------
 \subsection{Paso 1. Revisión de entradas}
+
+\subsubsection*{ASR que agrupa el driver}
+
+Del conjunto de la sección~\ref{sec:asr}, estos son los ASR que DRV-04 agrupa y el papel que cumple cada uno en esta iteración.
+
+\begin{tabla}{|L{1.4cm}|Y|L{1.7cm}|L{3.6cm}|}
+\hline
+\filacab \cab{ASR} & \cab{Qué debe cumplir la arquitectura} & \cab{Prioridad} & \cab{Papel en esta iteración} \\ \hline
+\endhead
+ASR-05 & Una caída de SQL Server pierde como máximo 5 segundos de jugadas y ningún dato confirmado, y deja constancia de lo perdido. & Prioritario & Objetivo. Su medida es ESC-09. \\ \hline
+ASR-14 & La solución usa solo C\# sobre .NET, SQL Server como almacenamiento y TCP sin WebSockets. & Prioritario & Condición: la persistencia es relacional, sobre SQL Server. \\ \hline
+\end{tabla}
 
 \subsubsection*{Objetivos de diseño}
 
@@ -138,6 +150,7 @@ Q-12 & Bajo aquí & Cambia el volumen, no la política. & Se difiere a la iterac
 \begin{tabla}{|L{3.0cm}|Y|}
 \fichacab
 \parte{Objetivo}{Que una caída de la base de datos no pierda nada confirmado, pierda solo lo acordado de las partidas en curso y deje constancia exacta de ello.}
+\parte{ASR que satisface}{ASR-05, con ASR-14 como condición.}
 \parte{Driver que cubre}{DRV-04.}
 \parte{Medida}{La de ESC-09: con 20 partidas en curso y una caída abrupta, los datos vuelven en menos de 15 minutos, se pierden 0 cuentas y 0 progresos confirmados, como máximo las jugadas de los últimos 5 segundos, no queda ningún registro a medias, el 100~\% de lo perdido aparece en un registro con su partida y sus jugadas, y ningún jugador espera más de 10 segundos sin aviso.}
 \parte{Límite que respeta}{ESC-01. La escritura conserva el tope que la iteración~4 le asignó y no retiene la respuesta al jugador.}

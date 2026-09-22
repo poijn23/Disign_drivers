@@ -9,7 +9,7 @@
 \fichacab
 \parte{Driver}{DRV-03 --- Presupuesto de un segundo por jugada.}
 \parte{Enunciado}{Cada jugada en línea dispone de menos de un segundo, con mediana bajo 300 ms, repartido de forma explícita entre validación, red y persistencia. Nada entra en el camino síncrono de la respuesta sin presupuesto asignado.}
-\parte{Por qué le toca este turno}{Es el driver que impide maximizar los demás, así que solo se puede repartir cuando existe lo que consume el tiempo: el arbitraje de la iteración~1, el canal protegido de la iteración~2 y el motor de la iteración~3. Antes de eso, cualquier reparto sería una suposición.}
+\parte{Por qué le toca este turno}{Suma 15 de 20 y agrupa ASR-01, el único requisito con un número impuesto. Es el driver que impide maximizar los demás, así que solo se puede repartir cuando existe lo que consume el tiempo: el arbitraje de la iteración~1, el canal protegido de la iteración~2 y el motor de la iteración~3. Antes de eso, cualquier reparto sería una suposición.}
 \parte{Qué decide esta iteración}{Cuánto tiempo puede consumir cada tramo del camino de una jugada y qué se hace para que la suma quede por debajo del segundo, con mediana bajo 300 ms.}
 \parte{Decisiones ya tomadas}{DEC-01 a DEC-03 y lo decidido en las tres iteraciones anteriores. Pesa especialmente que DEC-02 haya descartado la validación en el cliente: cada jugada cuesta un viaje completo de red, y el margen que queda para el servidor es lo que esta iteración tiene que repartir.}
 \parte{Qué no decide}{Qué se persiste y cuándo, que es de la iteración~5, aunque aquí se fije cuánto tiempo puede costar. Tampoco vuelve a discutir la autoridad, el protocolo ni las reglas.}
@@ -17,6 +17,18 @@
 
 % ------------------------------------------------------------
 \subsection{Paso 1. Revisión de entradas}
+
+\subsubsection*{ASR que agrupa el driver}
+
+Del conjunto de la sección~\ref{sec:asr}, estos son los ASR que DRV-03 agrupa y el papel que cumple cada uno en esta iteración.
+
+\begin{tabla}{|L{1.4cm}|Y|L{1.7cm}|L{3.6cm}|}
+\hline
+\filacab \cab{ASR} & \cab{Qué debe cumplir la arquitectura} & \cab{Prioridad} & \cab{Papel en esta iteración} \\ \hline
+\endhead
+ASR-01 & Una jugada en línea se responde en menos de 1 segundo, con mediana bajo 300 ms, con el servidor decidiendo y el tráfico cifrado. & Prioritario & Objetivo. Su medida es ESC-01. \\ \hline
+ASR-09 & Una partida en curso se puede observar, incluso sin cuenta, recibiendo el estado con retraso y sin frenar a los jugadores. & Media & Condición: la notificación a los espectadores no puede competir con la de los participantes. \\ \hline
+\end{tabla}
 
 \subsubsection*{Objetivos de diseño}
 
@@ -69,7 +81,7 @@ Condición. La ventana de cinco segundos de escritura diferida es la que hace po
 \filacab \cab{ID} & \cab{Restricción} & \cab{Cómo limita esta iteración} \\ \hline
 \endhead
 REQ-02 & El tiempo de respuesta debe ser menor a 1 segundo & Es el número impuesto que hay que repartir. \\ \hline
-REQ-01, CON-06 & Modo multijugador en línea obligatorio & La red está siempre en el camino: no hay modo local que la evite. \\ \hline
+REQ-01 & Modo multijugador en línea obligatorio & La red está siempre en el camino: no hay modo local que la evite. \\ \hline
 CON-02 & La comunicación es por TCP & La entrega ordenada y confiable cuesta retransmisiones cuando la red pierde paquetes. \\ \hline
 DEP-04 & Infraestructura externa & La latencia entre jugador y servidor no la controla el equipo; el ambiente de la medida la fija en 150 ms. \\ \hline
 CON-13 & 14 semanas & Descarta optimizaciones caras de construir: lo que no quepa en el plazo no sirve. \\ \hline
@@ -134,6 +146,7 @@ CON-13 & Bajo & Descarta optimizaciones que no quepan en el plazo. & Se atiende 
 \begin{tabla}{|L{3.0cm}|Y|}
 \fichacab
 \parte{Objetivo}{Que una jugada se responda en menos de un segundo, con mediana bajo 300 ms, con el servidor decidiendo y el tráfico protegido.}
+\parte{ASR que satisface}{ASR-01, con ASR-09 como condición.}
 \parte{Driver que cubre}{DRV-03.}
 \parte{Medida}{La de ESC-01: con 16 muros colocados, 150 ms de ida y vuelta y 20 partidas simultáneas, el 100~\% de 1\,000 colocaciones responde en menos de 1 segundo, la mediana queda bajo 300 ms, el oponente ve la jugada en el mismo plazo y 0 jugadas aceptadas se revierten.}
 \parte{Límite que respeta}{ESC-05 y ESC-06. Las medidas de seguridad de las iteraciones~1 y~2 se vuelven a ejecutar al final: el presupuesto no se cumple quitando comprobaciones.}
