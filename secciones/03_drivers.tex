@@ -1,0 +1,109 @@
+% ============================================================
+\section{Drivers}\label{sec:drivers}
+% ============================================================
+
+Un driver arquitectónico es el problema de diseño que la arquitectura tiene que resolver, enunciado de forma que sirva para conducir una iteración. Esta sección toma los cinco ASR de mayor prioridad de la subsección~\ref{sec:asr:prioridad}, los órdenes~1 a~5, y los convierte en cinco drivers.
+
+% ------------------------------------------------------------
+\subsection{Cómo se convierte un ASR en driver}
+
+Un driver no es un ASR con otro nombre. Es el mismo problema visto desde arriba: el ASR dice qué hay que cumplir y cuánto; el driver dice qué propiedad del sistema está en juego y, por lo tanto, qué hay que decidir. Cada conversión siguió cuatro reglas.
+
+\begin{tabla}{|L{4.0cm}|Y|}
+\hline
+\filacab \cab{Regla} & \cab{Qué significa al escribir el driver} \\ \hline
+\endhead
+Más general que el ASR &
+El driver enuncia la propiedad; la cifra que la comprueba se queda en el ASR y en su escenario. Generalizar no es volverse vago: el driver sigue diciendo qué tiene que ocurrir y de qué sistema se habla, y se puede rastrear hasta una medida concreta. \\ \hline
+Sin soluciones &
+Se aplica el mismo criterio de la subsección~\ref{sec:asr:enunciado}. Si el enunciado nombra un componente, un mecanismo o una tecnología, esa parte se retira: es lo que la iteración tiene que decidir comparando alternativas. Un driver que ya trae la respuesta no conduce ninguna iteración. \\ \hline
+Las restricciones se enuncian tal cual &
+Una restricción ya es una decisión tomada por quien tiene autoridad para tomarla, y no hay nada que generalizar. Se copia como llega y se le agrega, en la última columna, por qué es arquitectónicamente significativa: qué alternativas elimina y qué obliga a construir. \\ \hline
+Un driver, un ASR de origen &
+Cada driver se rastrea hasta un solo ASR, y conserva su lugar en el orden. Así, cuando un ASR cambia, se sabe exactamente qué driver revisar. \\ \hline
+\end{tabla}
+
+% ------------------------------------------------------------
+\Needspace*{0.35\textheight}
+\subsection{Los cinco drivers}
+
+Cada fila recoge el enunciado del driver, de qué tipo de entrada procede, el ASR del que se deriva con su lugar en el orden de la subsección~\ref{sec:asr:prioridad} y por qué ese driver obliga a decidir algo que cambia la arquitectura.
+
+\begin{tabla}{|L{1.3cm}|Y|L{2.5cm}|L{1.3cm}|Y|}
+\hline
+\filacab \cab{Driver} & \cab{Enunciado} & \cab{Tipo} & \cab{ASR de origen} & \cab{Por qué es arquitectónicamente significativo} \\ \hline
+\endhead
+DRV-01 &
+El sistema sostiene el desarrollo completo de una partida entre jugadores que están en equipos distintos, de modo que todos los participantes vean el mismo juego. &
+Funcionalidad primaria &
+ASR-08 (orden 1) &
+Es el driver que obliga a que el sistema tenga más de un extremo. De él dependen la existencia de una comunicación, de un lugar donde vive lo común a todos los participantes y de un almacenamiento compartido. Sin él, Bastion sería un programa en un solo equipo y ninguno de los otros cuatro drivers tendría sentido. \\ \hline
+DRV-02 &
+El desarrollo y el resultado de una partida dependen únicamente de acciones legítimas, y cada participante conoce solo lo que le corresponde, sin suponer que su equipo sea confiable. &
+Atributo de calidad: seguridad (integridad y confidencialidad) &
+ASR-02 (orden 2) &
+Obliga a decidir de qué extremo depende que una partida sea correcta y dónde se ejecutan las reglas. Es la decisión que CRN-10 describe como la más cara de cambiar: si se cambia después, cada mensaje cambia de significado, porque deja de ser una propuesta y pasa a ser un hecho, y hay que rehacer los dos extremos a la vez. \\ \hline
+DRV-03 &
+La solución se construye con C\# sobre .NET, almacena sus datos en SQL Server y se comunica mediante sockets TCP, sin WebSockets. &
+Restricción &
+ASR-14 (orden 3) &
+Elimina las alternativas que traen resuelto el transporte. Sin WebSockets, la delimitación de los mensajes, el versionado, el apretón de manos y la protección de lo que viaja pasan a ser componentes que el equipo diseña y mantiene. SQL Server fija un modelo relacional para todo lo que se conserve, y un único ecosistema permite que los dos extremos compartan código. Es una decisión ya tomada, pero condiciona todas las demás. \\ \hline
+DRV-04 &
+Lo que el jugador y el sistema intercambian no resulta aprovechable para un tercero que lo observe o lo repita. &
+Atributo de calidad: seguridad (confidencialidad) &
+ASR-03 (orden 4) &
+Afecta a los dos extremos al mismo tiempo y al formato de todos los mensajes, y su costo se descuenta del tiempo de respuesta comprometido. Decidirlo tarde obliga a rehacer el protocolo ya construido y a cambiar los clientes ya distribuidos. \\ \hline
+DRV-05 &
+La partida y la posición del jugador dentro de ella sobreviven a la interrupción de su comunicación y a un cambio de equipo. &
+Atributo de calidad: fiabilidad (recuperabilidad) &
+ASR-04 (orden 5) &
+Obliga a que la permanencia del jugador en la partida no dependa del canal que lo trajo, y a que lo común a la partida siga existiendo mientras él no está. Es lo que separa una arquitectura donde la partida vive atada a una conexión de otra donde la conexión es solo el medio por el que se llega a ella. \\ \hline
+\end{tabla}
+
+\textbf{Qué se generalizó y qué se retiró.} La tabla siguiente deja a la vista la conversión, para que se pueda comprobar regla por regla.
+
+\begin{tabla}{|L{1.3cm}|Y|Y|}
+\hline
+\filacab \cab{Driver} & \cab{Qué se generalizó respecto al ASR} & \cab{Qué se retiró por ser solución} \\ \hline
+\endhead
+DRV-01 & Las cifras de ASR-08, la forma de crear la partida por emparejamiento o por sala y el detalle de los turnos se quedan en el ASR. El driver conserva lo que de verdad conduce el diseño: jugadores en equipos distintos y un solo juego para todos. & Nada quedaba por retirar: el enunciado corregido de ASR-08 ya no nombraba ningún componente. \\ \hline
+DRV-02 & ASR-02 habla del estado de la partida y del turno; el driver habla del desarrollo y del resultado, que es la propiedad que el jugador percibe y que abarca también el final de la partida. & Del primer borrador se retiraron ``el servidor decide'' y ``proyección asimétrica del estado''. Cuál de los dos extremos tiene la autoridad es justamente lo que decide la iteración~1. \\ \hline
+DRV-03 & No se generaliza: es una restricción y se enuncia como llegó. & Nada. Lo que se agregó es la justificación de su significancia, que la regla exige para las restricciones. \\ \hline
+DRV-04 & ASR-03 enumera credenciales, códigos, sesiones y chat; el driver habla de todo lo que se intercambia, y añade ``ni repetirlo'', que en ASR-03 aparecía como no reutilizable. & Se retiró el cifrado. Cifrar es la solución previsible, pero no la única, y no puede estar en el enunciado del problema. \\ \hline
+DRV-05 & ASR-04 fija 15 segundos, 2 minutos y 5 segundos; el driver dice qué tiene que sobrevivir, que es lo que obliga a decidir. Las cifras vuelven cuando esa iteración tome QAS-08 como medida. & Se retiraron la sesión separada de la conexión y la detección por latidos, que eran dos decisiones metidas dentro del requisito. \\ \hline
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Prioridad de los drivers}\label{sec:drivers:prioridad}
+
+La prioridad de cada driver es la de su ASR de origen, tal como la fijó la subsección~\ref{sec:asr:prioridad}. A ese orden se le añade una comprobación: que sea viable para construir, porque un driver no se puede abordar antes que aquel del que depende.
+
+\begin{tabla}{|L{1.1cm}|L{1.3cm}|L{1.3cm}|Y|}
+\hline
+\filacab \cab{Orden} & \cab{Driver} & \cab{ASR (orden)} & \cab{Por qué ocupa ese lugar y de qué depende} \\ \hline
+\endhead
+1 & DRV-01 & ASR-08 (1) & Prioritario, y además no depende de ningún otro: es el que crea los dos extremos sobre los que los demás deciden algo. Los otros cuatro drivers hablan de una partida en línea que solo existe si este se resuelve. \\ \hline
+2 & DRV-02 & ASR-02 (2) & Prioritario. Depende de que existan dos extremos (DRV-01) y de nada más. Va antes que los tres siguientes porque decide dónde se ejecutan las reglas, y eso cambia qué mensajes existen, cuánto trabajo hay dentro del turno y qué hay que proteger. \\ \hline
+3 & DRV-03 & ASR-14 (3) & Prioritario y, por ser restricción, presente desde la primera iteración: no se ``resuelve'' en un turno, sino que acota lo que las demás pueden elegir. Ocupa este lugar porque lo que obliga a construir, el protocolo propio, es la entrada de DRV-04 y de DRV-05. \\ \hline
+4 & DRV-04 & ASR-03 (4) & Prioritario. Depende de DRV-03, que es el que deja el transporte sin protección heredada, y de DRV-02, que define qué mensajes hay que proteger. \\ \hline
+5 & DRV-05 & ASR-04 (5) & Prioritario. Es el último de los cinco porque necesita las tres decisiones anteriores: no se puede decidir cómo vuelve un jugador a su partida sin saber dónde vive lo que tiene que encontrar (DRV-02), por qué canal llega (DRV-03) y cómo se comprueba que sigue siendo él (DRV-04). \\ \hline
+\end{tabla}
+
+\textbf{El orden heredado coincide con el orden construible.} Ningún driver aparece antes que otro del que depende, así que no hace falta reordenar.
+
+% ------------------------------------------------------------
+\subsection{Lo que queda fuera de estos cinco drivers}
+
+Los nueve ASR activos restantes, del orden~6 al~14, y el reservado ASR-07 no producen driver en esta ronda. No desaparecen: siguen siendo entradas del diseño, y tres de ellos condicionan ya la primera iteración.
+
+\begin{tabla}{|L{1.4cm}|L{2.6cm}|Y|}
+\hline
+\filacab \cab{ASR} & \cab{Situación} & \cab{Qué papel cumple mientras tanto} \\ \hline
+\endhead
+ASR-01 & Orden 6, prioritario. Driver en la siguiente ronda. & Entra en la iteración~1 como límite: ninguna decisión puede impedir que una jugada se responda en menos de un segundo. No se reparte el presupuesto todavía, pero sí se descartan las alternativas que lo agotan. \\ \hline
+ASR-05 & Orden 7, prioritario. Driver en la siguiente ronda. & Entra en la iteración~1 como condición, a través de DEC-03: la partida exige almacenamiento disponible. Qué se escribe y cuándo se decide después. \\ \hline
+ASR-06 & Orden 8, prioritario. Driver en la siguiente ronda. & Entra en la iteración~1 como condición: la decisión sobre dónde se ejecutan las reglas no puede impedir que después se parametricen y se verifiquen solas. \\ \hline
+ASR-11 a ASR-13, ASR-15 & Órdenes 9 a 12, prioridad alta. & Son obligatorios, pero se cumplen dentro de la estructura que los cinco drivers imponen. ASR-15 actúa además como filtro permanente: una alternativa que dos personas no puedan construir en 14 semanas se descarta en cualquier iteración. \\ \hline
+ASR-09, ASR-10 & Órdenes 13 y 14, prioridad media. & Solo exigen que las decisiones de ahora no les cierren la puerta: que se pueda notificar a alguien que no juega y que un oponente automático pueda ocupar el lugar de un participante. \\ \hline
+ASR-07 & Reservado. & No entra hasta que Q-02 se resuelva. \\ \hline
+\end{tabla}

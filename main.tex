@@ -1,7 +1,7 @@
 % !TEX program = xelatex
 % ============================================================
-%  Diseño arquitectónico por iteraciones (ADD, pasos 1 a 4)
-%  Una iteración por driver arquitectónico.
+%  Diseño arquitectónico: ASR, drivers y primera iteración (ADD)
+%  La iteración llega hasta las fichas de decisión.
 %  Compilar con XeLaTeX o LuaLaTeX (usa fontspec):
 %      latexmk main.tex        (usa .latexmkrc -> xelatex)
 %      xelatex main.tex
@@ -20,19 +20,12 @@
 \pagenumbering{arabic}
 \setcounter{page}{1}
 
-% --- Método, ASR y priorización ---
+% --- Método, ASR y drivers ---
 \input{secciones/01_metodo}
 \input{secciones/02_asr}
-\input{secciones/03_priorizacion}
+\input{secciones/03_drivers}
 
-% --- Iteraciones (la primera de cada driver, en el orden de la sección 3) ---
-\input{secciones/iteraciones/it01}
-\input{secciones/iteraciones/it02}
-\input{secciones/iteraciones/it03}
-\input{secciones/iteraciones/it04}
-\input{secciones/iteraciones/it05}
-\input{secciones/iteraciones/it06}
-\input{secciones/iteraciones/it07}
-\input{secciones/iteraciones/it08}
+% --- Primera iteración de diseño, hasta las fichas de decisión ---
+\input{secciones/04_iteracion01}
 
 \end{document}
