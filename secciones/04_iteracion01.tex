@@ -1,0 +1,447 @@
+% ============================================================
+\section{Iteración 1 --- Partida en línea íntegra}\label{sec:it01}
+% ============================================================
+
+% ------------------------------------------------------------
+\subsection{Alcance de la iteración}
+
+\begin{tabla}{|L{3.0cm}|Y|}
+\fichacab
+\parte{Drivers que cubre}{DRV-01 y DRV-02, los dos primeros de la sección~\ref{sec:drivers}. DRV-03, por ser restricción, está presente sin ser objetivo: acota lo que se puede elegir.}
+\parte{Por qué los dos juntos}{Comparten el mismo objetivo y no se pueden comprobar por separado. DRV-01 pide que una partida entre equipos distintos llegue hasta el final; DRV-02 pide que ese final dependa solo de acciones legítimas. Una partida que se completa pero que un cliente alterado puede torcer no cumple ninguno de los dos, y una partida íntegra que no se puede terminar tampoco. Además, las dos alternativas en juego son las mismas: quién de los dos extremos produce el juego. Separarlos obligaría a tomar la misma decisión dos veces.}
+\parte{Qué decide}{La estructura general del sistema: en qué partes se divide, de qué extremo depende que una partida sea correcta y dónde vive lo que la partida tiene en común mientras dura.}
+\parte{Qué no decide}{Cómo viaja un mensaje: la delimitación, el versionado y el apretón de manos son de DRV-03 y se deciden en la iteración siguiente. Tampoco decide cómo se protege lo que viaja (DRV-04), cómo vuelve un jugador después de un corte (DRV-05), el reparto del segundo por jugada (ASR-01), qué se escribe y cuándo (ASR-05) ni cómo se parametrizan las reglas (ASR-06).}
+\parte{Decisiones previas}{El equipo ya tomó DEC-01, DEC-02 y DEC-03, registradas en la sección~\ref{sec:asr}. Entran como candidatas con respaldo, no como hechos incuestionables: esta iteración es donde se comparan con sus alternativas y quedan registradas con su razonamiento en las fichas ADR-001 a ADR-003.}
+\parte{Con qué termina}{Con las fichas de decisión de la subsección~\ref{sec:it01:adr}. La instanciación completa de los elementos, sus interfaces y el análisis de la iteración quedan para los pasos siguientes del método.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 1. Revisión de entradas}
+
+Se revisan las cinco entradas del método y se listan las que tienen algo que ver con los dos drivers. Las demás siguen siendo válidas, pero no dicen nada sobre cómo se reparte el sistema ni sobre de qué depende que una partida sea correcta.
+
+\subsubsection*{Drivers de la iteración}
+
+\begin{tabla}{|L{1.4cm}|Y|L{1.5cm}|L{3.4cm}|}
+\hline
+\filacab \cab{Driver} & \cab{Enunciado} & \cab{ASR (orden)} & \cab{Papel en esta iteración} \\ \hline
+\endhead
+DRV-01 & El sistema sostiene el desarrollo completo de una partida entre jugadores que están en equipos distintos, de modo que todos los participantes vean el mismo juego. & ASR-08 (1) & Objetivo. Aporta el incremento: una partida que llega hasta el final. \\ \hline
+DRV-02 & El desarrollo y el resultado de una partida dependen únicamente de acciones legítimas, y cada participante conoce solo lo que le corresponde, sin suponer que su equipo sea confiable. & ASR-02 (2) & Objetivo. Aporta la medida: QAS-05. \\ \hline
+DRV-03 & La solución se construye con C\# sobre .NET, almacena sus datos en SQL Server y se comunica mediante sockets TCP, sin WebSockets. & ASR-14 (3) & Restricción presente. No se decide aquí, pero elimina alternativas: no hay transporte con sesión, apretón de manos ni protección heredados. \\ \hline
+\end{tabla}
+
+\subsubsection*{Objetivos de diseño}
+
+\begin{tabla}{|L{1.5cm}|L{5.0cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Objetivo} & \cab{Origen y qué exige aquí} \\ \hline
+\endhead
+OBJ-01 & Dos jugadores pueden jugar una partida completa en línea, de principio a fin. &
+REQ-01 y el objetivo de negocio de juego en línea. Es lo que vuelve obligatorio que el sistema tenga más de un extremo. \\ \hline
+OBJ-02 & Nadie puede alterar una partida desde un equipo que controla. &
+CRN-23 y el interés de STK-15. Da por hecho que el cliente es hostil, y eso decide de quién depende que la partida sea correcta. \\ \hline
+OBJ-03 & El juego resulta parejo para los dos jugadores, sin ventajas que dependan del equipo de cada uno. &
+CRN-02 y CRN-12, con STK-01 y STK-09. Exige que ninguno de los dos vea antes ni distinto, aunque su equipo sea más rápido. \\ \hline
+OBJ-04 & Cada semana hay un incremento funcional y demostrable dentro de las 14 semanas. &
+CON-13 y CON-14. Limita lo que esta iteración puede permitirse: la estructura tiene que poder construirse por partes y probarse desde el primer incremento. \\ \hline
+\end{tabla}
+
+\subsubsection*{Requisitos funcionales primarios}
+
+Del documento de casos de uso se toman como primarios los que cambian el estado de una partida en curso o dependen de él. Son los que obligan a arbitrar y los que vuelven visible cualquier discrepancia entre lo que ve el jugador y lo que el sistema acepta.
+
+\begin{tabla}{|L{1.3cm}|L{4.2cm}|Y|}
+\hline
+\filacab \cab{CU} & \cab{Caso de uso} & \cab{Qué exige de esta iteración} \\ \hline
+\endhead
+CU-20 & Mover el peón &
+Una de las dos acciones del turno. Antes de aceptarla hay que comprobar sesión, participación, turno, número de jugada y reloj, y el resultado tiene que llegar igual a todos los participantes. \\ \hline
+CU-21 & Colocar un muro &
+La otra acción del turno y la más cara: exige comprobar que el muro no se solape ni se cruce (RN-04) y que todos los jugadores activos conserven camino a su meta (RN-05), sobre el tablero vigente. Es donde más se nota quién hace ese cálculo. \\ \hline
+CU-22, CU-23 & Ofrecer y aceptar tablas; rendirse &
+Terminan la partida por acuerdo o por decisión de un jugador. Una oferta pendiente caduca cuando llega una jugada (RN-05 del CU-22), así que dependen del mismo árbitro que las jugadas. \\ \hline
+CU-24 & Abandonar la partida &
+Distingue entre irse y desconectarse: a los 60 segundos de desconexión el rival puede reclamar la victoria (RN-03 del CU-26), lo que exige que el tiempo lo mida el sistema y no el cliente. \\ \hline
+CU-25 & Finalizar la partida y aplicar la progresión &
+Es el único momento en que el resultado se vuelve definitivo: forma de término, resultado por participación, elo, progresión y monedas. Cierra el recorrido del incremento. \\ \hline
+CU-17, CU-18, CU-19 & Buscar partida clasificatoria; crear sala privada; unirse con código &
+Crean la partida y fijan sus parámetros. No se descomponen aquí, pero determinan el momento en que la partida empieza a existir. \\ \hline
+\end{tabla}
+
+Quedan fuera de los primarios y se revisan en iteraciones posteriores: CU-26 (reconectar), que es el caso de DRV-05; CU-27 (jugar contra la IA), que depende de Q-01; CU-28 y CU-29 (chat y emotes), que dependen de ASR-11; CU-34 (ver una partida como espectador), que consume el estado pero no lo cambia; y CU-36 y CU-37 (historial y repetición), que dependen de lo que se decida persistir.
+
+\subsubsection*{Escenarios de atributos de calidad}
+
+\begin{tabla}{|L{1.7cm}|L{3.3cm}|Y|}
+\hline
+\filacab \cab{Escenario} & \cab{Atributo} & \cab{Qué exige de esta iteración} \\ \hline
+\endhead
+QAS-05 \newline (ASR-02) & Seguridad: integridad &
+Es la medida del objetivo. Con una batería de 200 mensajes inválidos de un cliente modificado, 50 de ellos aleatorios: el 100~\% se rechaza, el estado de la partida es idéntico antes y después de cada mensaje, 0 respuestas contienen datos privados del rival, el sistema no se detiene, las otras 20 partidas siguen cumpliendo QAS-01 y el 100~\% de los intentos queda registrado con cuenta y hora. \\ \hline
+QAS-01 \newline (ASR-01) & Desempeño: comportamiento temporal &
+No es el objetivo, pero sí el límite. Ninguna decisión puede impedir que, en 1\,000 colocaciones de barrera, el 100~\% responda en menos de 1 segundo y la mediana quede bajo 300 ms, con el peor tablero y 20 partidas simultáneas. \\ \hline
+QAS-07 & Responsabilidad: trazabilidad &
+Cada acción tiene que quedar ligada a la cuenta que la hizo. Se apoya en el mismo registro que pide QAS-05. \\ \hline
+QAS-08 \newline (ASR-04) & Fiabilidad: recuperabilidad &
+No se atiende aquí, pero condiciona: la estructura no puede hacer que la partida deje de existir cuando se cierra una conexión, porque entonces DRV-05 sería irrealizable sin rehacerla. \\ \hline
+QAS-09 \newline (ASR-05) & Fiabilidad y responsabilidad &
+No se atiende aquí. Condiciona en un punto: tiene que quedar claro de dónde se reconstruye una partida si el almacenamiento se cae. \\ \hline
+QAS-12 \newline (ASR-06) & Modificabilidad &
+No se atiende aquí. Condiciona en un punto: dónde se ejecuten las reglas no puede impedir que después se parametricen y se verifiquen sin intervención manual. \\ \hline
+\end{tabla}
+
+\subsubsection*{Restricciones}
+
+\begin{tabla}{|L{1.9cm}|L{4.3cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Restricción} & \cab{Cómo limita esta iteración} \\ \hline
+\endhead
+REQ-01 & Modo multijugador en línea obligatorio & La partida no puede resolverse en un solo equipo: hay dos extremos y una red entre ellos. \\ \hline
+CON-02 & La comunicación es por sockets TCP & Hay entrega ordenada y confiable, pero también conexiones medio abiertas: una caída de Wi-Fi no cierra el socket. \\ \hline
+CON-03 & Está prohibido usar WebSockets & Lo que otro transporte traería resuelto lo construye el equipo. Ninguna alternativa puede apoyarse en una sesión ni en un apretón de manos que vengan dados. \\ \hline
+CON-17 & La pila TCP/IP varía entre entornos & Impide confiar en el mecanismo del sistema operativo para reconocer una conexión caída: tarda horas y no es uniforme. \\ \hline
+CON-04, DEP-03 & Almacenamiento en SQL Server, alojado en infraestructura externa & El almacenamiento puede caerse y su latencia no está bajo el control del equipo. \\ \hline
+DEP-04 & Infraestructura de servidores y red provista externamente & El proceso puede reiniciarse sin aviso; la recuperación sí es responsabilidad del equipo. \\ \hline
+CON-13, CON-14 & Plazo de 14 semanas e incrementos auditables & Descartan las alternativas que no se puedan construir y probar por partes dentro del plazo. \\ \hline
+CON-01, CON-16 & C\# sobre .NET & Acotan herramientas, no estructura. Abaratan que los dos extremos compartan un mismo ensamblado. \\ \hline
+\end{tabla}
+
+\subsubsection*{Decisiones de proyecto ya tomadas}
+
+\begin{tabla}{|L{1.5cm}|L{4.3cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Decisión} & \cab{Qué aporta a esta iteración} \\ \hline
+\endhead
+DEC-01 & El sistema sigue un modelo cliente-servidor basado en servicios. &
+Entra como la alternativa que el equipo prefiere para repartir el sistema. Se compara en ADR-001 y ADR-002. \\ \hline
+DEC-02 & No se confía en el cliente: toda la lógica del juego se ejecuta en el servidor. &
+Entra como la alternativa más estricta frente a OBJ-02. Se compara en ADR-001 y ADR-003. Si se acepta, el cliente no valida reglas ni calcula resultados, ni siquiera para mostrarlos. \\ \hline
+DEC-03 & Una partida en línea exige conexión con la base de datos. &
+Condiciona ADR-004: la partida no se juega sin almacenamiento disponible, tal como exige PRE-04 de CU-20, CU-21 y CU-25. Qué se escribe y cuándo se decide en una iteración posterior. \\ \hline
+\end{tabla}
+
+\subsubsection*{Concerns}
+
+\begin{tabla}{|L{1.5cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Concern y qué aporta a la iteración} \\ \hline
+\endhead
+CRN-10 & \emph{``Tengo que decidir quién manda sobre el estado de la partida, el cliente o el servidor. De esa decisión cuelga casi todo lo demás, y cambiarla más adelante me sale carísimo.''} Es el concern que da origen a DRV-02. \\ \hline
+CRN-23 & El especialista en ciberseguridad da por hecho que alguien modificará el cliente y probará con uno alterado. Fija el supuesto de confianza con el que se diseña. \\ \hline
+CRN-12 & El equipo teme que cliente y servidor discrepen sobre si una jugada es válida y que el jugador vea una jugada aceptada que después se revierte. \\ \hline
+CRN-02 & El jugador espera respuesta inmediata al colocar una barrera. Es el contrapeso de todo lo anterior. \\ \hline
+CRN-11 & Sin WebSockets hay que definir dónde empieza y termina cada mensaje y qué hacer cuando los dos extremos no tienen la misma versión. \\ \hline
+CRN-07 & El equipo, de dos personas, no puede sostener muchas piezas desplegables a la vez. \\ \hline
+\end{tabla}
+
+\subsubsection*{Preguntas abiertas que condicionan la iteración}
+
+\begin{tabla}{|L{1.3cm}|Y|}
+\hline
+\filacab \cab{ID} & \cab{Cómo condiciona} \\ \hline
+\endhead
+Q-01 & Si habrá un oponente controlado por IA. Afecta a quién ocupa el lugar del segundo jugador, no a de quién depende la partida. La estructura elegida no debe impedir que ese oponente entre como un participante más. \\ \hline
+Q-02 & Si habrá conexión LAN. No cambia de quién depende la partida, pero obliga a que la parte que arbitra sea desplegable por separado y a que su dirección se lea de configuración. \\ \hline
+Q-09 & Con qué mecanismo se protege lo que viaja. Se decide en DRV-04; aquí solo importa que cargará un costo al presupuesto de QAS-01. \\ \hline
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 2. Objetivo de la iteración y selección de entradas}
+
+\subsubsection*{Priorización de las entradas}
+
+Cada entrada del paso 1 se pesa por lo que aporta a este objetivo y no por su importancia general: una entrada puede ser crítica para el proyecto y pesar poco aquí si cualquier alternativa razonable la cumple.
+
+\begin{tabla}{|L{3.2cm}|L{1.3cm}|Y|L{2.2cm}|}
+\hline
+\filacab \cab{Entrada} & \cab{Peso} & \cab{Por qué pesa lo que pesa} & \cab{Decisión} \\ \hline
+\endhead
+QAS-05 (ASR-02) & Alto & Es la entrada que decide entre las alternativas: con el cliente produciendo el juego, la medida es imposible; con el sistema produciéndolo, es alcanzable. & Se atiende \\ \hline
+CU-20, CU-21 & Alto & Son las dos acciones que cambian la partida. Sus comprobaciones definen qué hay que saber en el momento de aceptar o rechazar. & Se atiende \\ \hline
+CRN-10 & Alto & Enuncia la decisión y advierte su costo de cambio. Es el motivo por el que la iteración existe. & Se atiende \\ \hline
+OBJ-01, OBJ-02 & Alto & Son los dos objetivos que los drivers traducen. Juntos descartan tanto el juego local como el juego con un extremo confiado. & Se atiende \\ \hline
+CON-02, CON-03, CON-17 & Alto & Determinan que nada del transporte viene dado y que una conexión caída no se nota por sí sola. & Se atiende como restricción \\ \hline
+DEC-01, DEC-02 & Alto & Son las alternativas preferidas por el equipo y hay que compararlas con las demás antes de registrarlas. & Se atiende \\ \hline
+QAS-01 (ASR-01) & Alto, como límite & No es el objetivo, pero descarta toda alternativa que agregue viajes dentro del turno o que espere a un tercero antes de responder. & Se atiende como límite \\ \hline
+DEC-03 & Medio & Convierte la disponibilidad del almacenamiento en condición de la partida. Aquí solo fija que la partida no sigue a ciegas si se pierde. & Se atiende como condición \\ \hline
+CU-22 a CU-25 & Medio & Aportan las formas de término, que la partida tiene que poder alcanzar para que el incremento esté completo. & Se atiende \\ \hline
+CRN-23, CRN-12 & Medio & Son el origen de QAS-05: fijan el supuesto de cliente hostil y el temor a que los dos extremos discrepen. & Se atiende \\ \hline
+QAS-07 & Medio & Pide un registro que QAS-05 ya exige con más detalle. & Se atiende por vía indirecta \\ \hline
+QAS-08 (ASR-04) & Alto en su iteración, condición aquí & Obliga a que la partida no muera con la conexión. Decidir cómo vuelve el jugador necesita el protocolo, que no existe todavía. & Se difiere a DRV-05 \\ \hline
+QAS-09 (ASR-05) & Alto en su iteración, condición aquí & Obliga a definir qué se pierde ante una caída del almacenamiento. Necesita decidir sobre el acceso a datos. & Se difiere \\ \hline
+QAS-12 (ASR-06) & Bajo aquí & Que las reglas se parametricen y se verifiquen solas es otro objetivo. Aquí solo hay que dejarle sitio. & Se difiere \\ \hline
+CU-17, CU-18, CU-19 & Bajo & Crean la partida, pero cualquier forma de crearla es compatible con las alternativas en juego. & Se difiere \\ \hline
+CRN-11 & Bajo aquí & Delimitación y versionado son del protocolo: condicionan el costo por mensaje, no de quién depende la partida. & Se difiere a DRV-03 \\ \hline
+CON-04, DEP-03, DEP-04 & Medio & Fijan qué puede fallar, no cómo se estructura la respuesta a la falla. & Se atiende como supuesto \\ \hline
+CON-13, CON-14, CRN-07 & Medio & No eligen entre alternativas; descartan las que no se puedan construir por partes ni sostener entre dos personas. & Se atiende como filtro \\ \hline
+Q-01, Q-02 & Bajo & Ninguna cambia de qué depende la partida. Solo imponen que un oponente automático pueda entrar como participante y que la parte que arbitra sea desplegable por separado. & Se atiende como condición \\ \hline
+\end{tabla}
+
+\subsubsection*{Objetivo de la iteración}
+
+\begin{tabla}{|L{3.0cm}|Y|}
+\fichacab
+\parte{Objetivo}{Que dos jugadores en equipos distintos puedan llevar una partida de principio a fin y que su desarrollo dependa únicamente de acciones legítimas: ningún mensaje, venga de donde venga, cambia la partida si no es una jugada legal del participante a quien le toca el turno.}
+\parte{Drivers que cubre}{DRV-01, en la parte del enunciado que pide una partida completa entre equipos distintos con un mismo juego para todos. DRV-02, completo.}
+\parte{ASR que satisface}{ASR-08 y ASR-02, órdenes 1 y 2 de la subsección~\ref{sec:asr:prioridad}.}
+\parte{Medida}{La de QAS-05: con 200 mensajes inválidos de un cliente modificado, 50 de ellos aleatorios, el 100~\% se rechaza, el estado de la partida es idéntico antes y después de cada mensaje, 0 respuestas llevan datos privados del rival y el 100~\% de los intentos queda registrado con cuenta y hora.}
+\parte{Límite que respeta}{QAS-01. Ninguna decisión de esta iteración puede impedir que una jugada se responda en menos de un segundo, con mediana bajo 300 ms; el reparto del presupuesto entre los tramos se decide después.}
+\parte{Incremento que produce}{Dos clientes juegan una partida completa en línea: CU-20 y CU-21 funcionan de principio a fin, la partida llega a alguna de las formas de término de CU-22 a CU-25, y un cliente de prueba que envía mensajes inválidos no consigue alterarla. Es demostrable al cerrar la iteración y sirve como incremento semanal (CON-14).}
+\parte{Criterio de éxito}{La iteración termina cuando ese incremento pasa la medida de QAS-05 sin violar QAS-01. Una alternativa de diseño que no lo permita se descarta, aunque sea mejor en todo lo demás.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 3. Elemento a descomponer}
+
+Este es el elemento sobre el que trabaja la iteración. La ficha dice qué abarca, por qué se eligió, qué queda por decidir sobre él y contra qué elementos del análisis se puede rastrear.
+
+\Needspace*{0.4\textheight}
+\subsubsection*{EL-01 --- El sistema Bastion}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Elemento}{El sistema Bastion completo, tomado como una sola pieza todavía sin partes.}
+\parte{Qué abarca}{Todo lo que queda dentro de la frontera del sistema: lo que el jugador usa en su equipo, lo que sostiene la partida mientras dura y lo que conserva cuentas, partidas y resultados. Fuera de la frontera quedan el proveedor del segundo factor (DEP-02), el correo (DEP-01) y la infraestructura que aloja los servidores y la base de datos (DEP-03, DEP-04).}
+\parte{Por qué se elige}{Porque es el único elemento que existe. Bastion se construye desde cero y esta es la primera iteración: no hay elementos de iteraciones anteriores que refinar, así que el método indica empezar por el sistema mismo. Y porque es el recorte que corresponde al objetivo: decidir de qué extremo depende que una partida sea correcta no se puede hacer dentro de una parte del sistema, ya que la respuesta es precisamente qué partes hay y qué le toca a cada una.}
+\parte{Qué falta decidir sobre él}{En cuántas partes se divide y cuál es la frontera de cada una. Cuál de esas partes produce el juego y cuál lo presenta. Dónde vive lo que la partida tiene en común mientras dura. Y qué se comprueba antes de que un mensaje pueda cambiar algo. Son decisiones que, tomadas de otra manera, dan sistemas distintos, y son las más caras de revertir (CRN-10).}
+\parte{Evidencia en los casos de uso}{CU-21 reconstruye el tablero a partir de las Jugada registradas (paso 12) y confirma una transacción antes de notificar (pasos 15 a 19), sin decir de dónde sale el tablero con el que valida ni quién lo tiene. CU-21 resalta los surcos válidos (paso 3) y muestra el efecto del muro sobre el camino más corto (paso 5), sin decir qué parte hace ese cálculo. CU-20, CU-21 y CU-25 exigen en PRE-04 conexión disponible con la base de datos. Esos huecos son exactamente lo que esta iteración tiene que cerrar.}
+\parte{Trazabilidad}{DRV-01, DRV-02, con DRV-03 como restricción. ASR-08, ASR-02, con ASR-01 como límite. QAS-05, QAS-01, QAS-07. CU-17 a CU-25. REQ-01, CON-02, CON-03, CON-04. DEC-01, DEC-02, DEC-03. CRN-10, CRN-23, CRN-12, CRN-02. STK-05, STK-15, STK-01.}
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Paso 4. Conceptos de diseño}
+
+Estos son los conceptos con los que se descompone el sistema. Cada ficha dice qué atiende y por qué se eligió frente a las alternativas, qué efectos trae consigo y contra qué elementos del análisis se puede rastrear. Las alternativas que se descartaron quedan registradas con su comparación completa en las fichas de decisión de la subsección~\ref{sec:it01:adr}.
+
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-01 --- Cliente-servidor}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Estilo arquitectónico.}
+\parte{Descripción}{El sistema se parte en dos tipos de elemento: un cliente por jugador, que presenta y recoge lo que este hace, y un servidor común, que atiende a todos. Atiende DRV-01 porque es lo que permite que jugadores en equipos distintos vean el mismo juego: hay un lugar donde lo común existe una sola vez. Se elige frente al juego entre pares, donde cada equipo habla con el otro sin nadie en medio, que ahorra un salto de red pero deja el juego en manos de los participantes y no ofrece dónde guardar cuentas ni resultados.}
+\parte{Efectos}{Cada acción del turno cuesta al menos un viaje completo de ida y vuelta, que se descuenta del segundo de QAS-01. Aparece la necesidad de un protocolo, que con CON-03 hay que construir. El servidor se vuelve un punto del que todos dependen, con lo que su caída afecta a todas las partidas.}
+\parte{Trazabilidad}{DRV-01, DRV-03. ASR-08. QAS-01. CU-17 a CU-25. REQ-01, CON-02. DEC-01. CRN-02. STK-03, STK-01, STK-05.}
+\end{tabla}
+
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-02 --- El servidor produce el juego; el cliente lo presenta}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Estilo: reparto de responsabilidades entre los extremos.}
+\parte{Descripción}{Lo que el jugador envía es una propuesta; lo que cambia la partida es la decisión del servidor. El cliente no calcula reglas ni resultados, ni siquiera para mostrarlos. Atiende DRV-02 en su raíz: si el cliente no produce nada, no hay nada suyo de lo que desconfiar, y la medida de QAS-05 deja de depender de qué tan bien se detecta un cliente alterado. Se elige frente a repartir el cálculo entre los dos extremos y comprobarlo después, que es lo habitual en juegos en línea y lo que CRN-12 señala como fuente de discrepancias visibles para el jugador.}
+\parte{Efectos}{Descarta la validación optimista: no hay respuesta local que adelantar, así que todo el tiempo percibido es tiempo real y el margen de QAS-01 se estrecha. Obliga a que la notificación de turno lleve lo que la interfaz necesita para dibujar, que es de donde sale CD-08. A cambio, la corrección de la partida deja de depender de la versión del cliente.}
+\parte{Trazabilidad}{DRV-02. ASR-02, ASR-01. QAS-05, QAS-01. CU-20 (pasos 1 a 3), CU-21 (pasos 3 a 7). DEC-02. CRN-23, CRN-12, CRN-10. STK-15, STK-05, STK-09.}
+\end{tabla}
+
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-03 --- Servicios separados dentro del servidor}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Estilo: descomposición en servicios.}
+\parte{Descripción}{El servidor se divide por responsabilidad en cuatro servicios: comunicación, partidas, cuentas y acceso a datos, todos dentro de una misma pieza desplegable. Atiende DRV-02 al darle a la partida una frontera propia, separada de lo que la transporta y de lo que la guarda, y atiende DRV-01 al permitir que cada servicio se construya y se pruebe por separado. Se elige frente a un servidor de una sola pieza, que obligaría a decidirlo todo a la vez, y frente a servicios desplegados por separado, que con dos personas y 14 semanas añaden despliegue, versiones y saltos de red que QAS-01 no puede pagar.}
+\parte{Efectos}{Fija las fronteras de las iteraciones siguientes: la comunicación es de DRV-03 y DRV-04, y el acceso a datos es de ASR-05. Obliga a definir interfaces internas antes de construir. Deja abierta la puerta de Q-02, porque la pieza se puede desplegar aparte sin cambiar su interior.}
+\parte{Trazabilidad}{DRV-01, DRV-02, DRV-03. ASR-08, ASR-15. QAS-01. CON-13, CON-14, CON-16. DEC-01. CRN-07, CRN-11. Q-02. STK-05, STK-14, STK-03.}
+\end{tabla}
+
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-04 --- Las reglas del juego, en un componente aparte}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Patrón: modelo de dominio aislado.}
+\parte{Descripción}{Un solo componente sabe qué jugadas son legales, qué muros se pueden colocar (RN-04), cuándo un jugador queda sin camino (RN-05) y cuándo termina la partida. No conoce pantallas ni conexiones: recibe una posición y una jugada, y responde. Atiende DRV-02 porque concentra en un solo lugar lo que decide si una acción es legítima, de modo que no hay dos versiones de la verdad que puedan discrepar (CRN-12). Se elige frente a dejar las reglas repartidas dentro del servicio de partidas, que las mezclaría con los turnos, los relojes y las notificaciones.}
+\parte{Efectos}{Permite ejecutar partidas completas sin levantar red ni interfaz, que es la condición que ASR-06 necesitará después y lo que hace posible probar desde el primer incremento (CON-14). Obliga a que el servicio de partidas le pase la posición completa en cada consulta. Su costo de cálculo, sobre todo el de RN-05, queda dentro del turno y entra en el presupuesto de QAS-01.}
+\parte{Trazabilidad}{DRV-02. ASR-02, ASR-06, ASR-01. QAS-05, QAS-12, QAS-01. CU-20, CU-21 (RN-04, RN-05). CON-14, CON-16. CRN-12, CRN-13. STK-06, STK-10, STK-05.}
+\end{tabla}
+
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-05 --- Copia de trabajo en memoria por partida, con registro persistente de cada jugada}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Patrón de gestión de estado.}
+\parte{Descripción}{Mientras la partida dura, el servicio de partidas la tiene completa en memoria y decide contra esa copia; cada jugada aceptada se registra además en la base de datos, de la que la partida se puede reconstruir. Atiende DRV-02 en la parte que QAS-05 mide como ``estado idéntico antes y después'': solo se puede afirmar de algo que tenga un dueño único y conocido. Se elige frente a leer la partida completa del almacenamiento en cada jugada, que metería la latencia de DEP-03 dentro de cada turno.}
+\parte{Efectos}{Cumple DEC-03 sin poner el almacenamiento en el camino de la respuesta. Obliga a reconstruir desde las jugadas registradas al recuperar, que es lo que CU-21 (paso 12) y CU-26 (paso 9) ya describen. Abre una diferencia temporal entre lo respondido y lo escrito, que ASR-05 acotará en cinco segundos. Y hace que la memoria del servidor crezca con el número de partidas simultáneas.}
+\parte{Trazabilidad}{DRV-01, DRV-02. ASR-02, ASR-05, ASR-01. QAS-05, QAS-09, QAS-01. CU-20, CU-21 (paso 12), CU-25. CON-04, DEP-03, DEP-04. DEC-03. TEN-06. CRN-19, CRN-10. STK-13, STK-14.}
+\end{tabla}
+
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-06 --- Una partida atiende sus mensajes de uno en uno}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Patrón de concurrencia: objeto activo.}
+\parte{Descripción}{Cada partida tiene su propia cola y procesa lo que le llega en orden, uno a la vez, mientras las demás partidas avanzan en paralelo. Atiende DRV-02 en la parte que exige que el estado quede idéntico tras cada mensaje rechazado: sin este orden, dos mensajes simultáneos podrían dejar la partida en una posición que ninguna jugada legal produce. Además, una jugada fuera de orden se detecta de forma natural (FA-07 del CU-21). Se elige frente a un bloqueo compartido por todo el servidor, que serializaría entre sí las 20 partidas de QAS-05 y rompería QAS-01.}
+\parte{Efectos}{Cada partida se puede medir por separado, lo que facilita comprobar QAS-01. El trabajo por jugada tiene que ser corto, porque mientras dura bloquea a su propia cola: eso obliga a que las escrituras lentas salgan del camino. Nada fuera de la partida puede tocar su estado.}
+\parte{Trazabilidad}{DRV-02. ASR-02, ASR-01. QAS-05, QAS-01. CU-20, CU-21 (FA-07, NOT\_YOUR\_TURN). CRN-02, CRN-10. STK-01, STK-15, STK-05.}
+\end{tabla}
+
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-07 --- Cada mensaje se valida, se autentica y se autoriza antes de tocar la partida}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Tácticas de seguridad: validar la entrada, autenticar y autorizar a los actores.}
+\parte{Descripción}{Todo mensaje pasa por el mismo filtro antes de llegar al servicio de partidas: se comprueba que esté bien formado y que su versión sea la esperada, que corresponda a una sesión abierta y que esa cuenta participe en esa partida, como hace CU-21 en su paso 8 y resuelve en FA-05 con SESSION\_INVALID y NOT\_A\_PARTICIPANT. Atiende DRV-02 en dos de los tres frentes de QAS-05: los 50 mensajes mal formados o de otra versión, y las solicitudes de datos de la cuenta del rival. Se elige frente a confiar en el identificador de jugador que el propio mensaje trae, que es justo lo que un cliente alterado falsifica, y frente a que cada servicio se defienda por su cuenta, que repartiría la misma comprobación por todo el servidor.}
+\parte{Efectos}{El servicio de partidas solo recibe mensajes bien formados y de quien dice ser, y puede ocuparse de reglas y turnos. Obliga a que el servicio de cuentas exponga la validez de una sesión al de partidas. Agrega un paso por mensaje, con su costo dentro de QAS-01, y deja preparado el sitio donde DRV-04 pondrá la protección de lo que viaja.}
+\parte{Trazabilidad}{DRV-02, DRV-03, DRV-04. ASR-02, ASR-03. QAS-05, QAS-06. CU-20, CU-21 (paso 8, FA-05, EX-02, EX-03), CU-01. CON-03. CRN-23, CRN-11. STK-15, STK-10, STK-02.}
+\end{tabla}
+
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-08 --- Cada destinatario recibe solo lo que puede conocer}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Táctica de seguridad: limitar el acceso a la información, con origen en CD-02.}
+\parte{Descripción}{El servidor arma lo que envía en función de quién lo va a recibir: al jugador en turno le manda además las casillas y los surcos donde puede jugar y el efecto de cada muro sobre el camino más corto; a nadie le manda datos de la cuenta de otro. Atiende el tercer frente de QAS-05, las 0 respuestas con datos privados del rival, y hace posible CD-02: la interfaz resalta y previsualiza con lo que ya recibió, sin calcular nada. Se elige frente a enviar a todos el mismo mensaje completo y dejar que cada cliente muestre lo que le toca, que confía la confidencialidad al equipo del jugador, y frente a preguntar al servidor cada vez que el jugador arrastra un muro por el tablero, que multiplicaría los viajes dentro del turno.}
+\parte{Efectos}{El mensaje de turno crece, con su costo para el protocolo de DRV-03 y para el presupuesto de QAS-01. Mantiene CU-20 y CU-21 tal como están escritos de cara al jugador. Obliga a que el componente de reglas sepa enumerar las jugadas legales, y no solo juzgar una. Deja resuelto de antemano el caso del espectador de ASR-09, que recibirá su propia versión.}
+\parte{Trazabilidad}{DRV-02. ASR-02, ASR-09, ASR-01. QAS-05, QAS-01, QAS-02. CU-20 (pasos 1 a 3), CU-21 (pasos 3 a 5, FA-02), CU-34. DEC-02. REQ-07. CRN-01, CRN-02, CRN-23. STK-01, STK-09, STK-15.}
+\end{tabla}
+
+\Needspace*{0.3\textheight}
+\subsubsection*{CD-09 --- Cada intento rechazado queda registrado con su cuenta y su hora}
+
+\begin{tabla}{|L{2.6cm}|Y|}
+\fichacab
+\parte{Estilo}{Táctica de seguridad: detectar y auditar.}
+\parte{Descripción}{Todo mensaje que el filtro o la partida rechazan se anota con la cuenta que lo envió y el momento en que llegó. Atiende la última parte de la medida de QAS-05, el 100~\% de los intentos registrados, y es lo que convierte un rechazo silencioso en evidencia. Se elige frente a contar los rechazos sin identificarlos, que no permitiría investigar ni sostener una sanción.}
+\parte{Efectos}{Exige que todo mensaje llegue ligado a una cuenta, lo que depende de CD-07. Genera escritura adicional que no puede entrar en el camino de la respuesta, por el mismo motivo que la de CD-05. Da la base sobre la que después se apoyan la moderación de CU-42 a CU-45 y las bitácoras de CU-48.}
+\parte{Trazabilidad}{DRV-02. ASR-02, ASR-11. QAS-05, QAS-07. QA-08. CU-42 a CU-45, CU-48. TEN-06. CRN-18, CRN-23. STK-15, STK-16, STK-17.}
+\end{tabla}
+
+\subsubsection*{Elementos que resultan de la descomposición}
+
+Al aplicar los nueve conceptos al sistema, EL-01 deja de ser una sola pieza. Estos son los elementos que quedan, y a ellos se refieren las fichas de decisión.
+
+\begin{tabla}{|L{1.2cm}|L{4.0cm}|Y|L{2.0cm}|}
+\hline
+\filacab \cab{ID} & \cab{Elemento} & \cab{Responsabilidad} & \cab{Conceptos} \\ \hline
+\endhead
+C-01 & Cliente de escritorio & Presenta el tablero, recoge lo que el jugador hace y muestra lo que el servidor le envía. No calcula reglas ni resultados. & CD-01, CD-02, CD-08 \\ \hline
+C-02 & Punto de entrada de comunicación & Recibe y envía mensajes, comprueba su forma y su versión, y resuelve a qué sesión y a qué cuenta corresponde cada uno. & CD-01, CD-03, CD-07 \\ \hline
+C-03 & Servicio de partidas & Sostiene cada partida en curso, controla turnos y relojes, acepta o rechaza las acciones y notifica el resultado. & CD-03, CD-05, CD-06, CD-08 \\ \hline
+C-04 & Componente de reglas & Dice qué jugadas son legales sobre una posición dada y cuándo termina la partida. No conoce pantallas ni conexiones. & CD-04 \\ \hline
+C-05 & Servicio de cuentas y sesiones & Abre y cierra sesiones, y responde si una sesión sigue siendo válida y a qué cuenta pertenece. & CD-03, CD-07 \\ \hline
+C-06 & Servicio de acceso a datos & Es el único que habla con la base de datos; registra jugadas y resultados y devuelve lo necesario para reconstruir una partida. & CD-03, CD-05 \\ \hline
+C-07 & Base de datos & Conserva cuentas, partidas, participaciones y jugadas. Es la copia de referencia. & CD-05 \\ \hline
+C-08 & Bitácora de seguridad & Conserva los intentos rechazados con su cuenta y su hora. & CD-09 \\ \hline
+\end{tabla}
+
+\subsubsection*{Riesgos que dejan abiertos estos conceptos}
+
+\begin{tabla}{|L{1.2cm}|Y|L{2.6cm}|}
+\hline
+\filacab \cab{ID} & \cab{Riesgo} & \cab{Afecta a} \\ \hline
+\endhead
+R-01 & El viaje completo de ida y vuelta más el arbitraje no caben en el segundo de QAS-01 cuando se les sume la protección de lo que viaja, que todavía no se ha decidido. & ASR-01, ASR-03 \\ \hline
+R-02 & Sin ninguna respuesta local, la interfaz se percibe lenta aunque el tiempo medido cumpla, sobre todo al arrastrar un muro por el tablero. & ASR-01; STK-09, STK-01 \\ \hline
+R-03 & El cálculo de camino de RN-05 dentro del turno domina el tiempo de respuesta en el tablero avanzado, que es justo el caso de QAS-01. & ASR-01, ASR-06 \\ \hline
+R-04 & La copia en memoria y lo registrado divergen si el proceso se detiene entre una y otra, y la partida se reconstruye distinta. & ASR-05 \\ \hline
+R-05 & Todas las partidas en curso viven en un mismo proceso: si se reinicia, se pierden todas a la vez hasta donde alcance lo registrado. & ASR-04, ASR-05; DEP-04 \\ \hline
+R-06 & Una sesión válida capturada permite suplantar al jugador mientras no exista la protección del tránsito, que es de DRV-04. & ASR-03, ASR-02 \\ \hline
+R-07 & Registrar cada intento rechazado permite que un atacante llene la bitácora a propósito y degrade el servicio. & ASR-02; QAS-05 \\ \hline
+R-08 & Construir el protocolo propio, los cuatro servicios y el componente de reglas excede lo que dos personas pueden terminar en 14 semanas. & ASR-15; CRN-07 \\ \hline
+\end{tabla}
+
+% ------------------------------------------------------------
+\subsection{Fichas de decisión}\label{sec:it01:adr}
+
+Cada ficha registra una decisión de esta iteración con las alternativas que se compararon, los criterios con que se compararon y lo que la decisión cuesta. Las tres primeras corresponden a las decisiones que el equipo traía tomadas (DEC-01 a DEC-03) y que aquí quedan justificadas; las dos últimas son nuevas.
+
+\decision{ADR-001}{El servidor produce el juego y el cliente solo lo presenta}
+
+\begin{tabla}{|L{2.9cm}|Y|}
+\adrcab
+\parte{Estado}{Aceptado.}
+\parte{Contexto}{Hay que decidir de qué extremo depende que una partida sea correcta. Es la decisión que CRN-10 señala como la más cara de cambiar y de la que cuelga el significado de cada mensaje. En juego: ASR-02, que exige que solo las acciones legítimas cambien la partida aunque el equipo del jugador esté alterado (CRN-23), y ASR-08, que exige que todos los participantes vean el mismo juego. Como límite, ASR-01.}
+\parte{Alternativas}{A. El cliente calcula la jugada y el servidor la retransmite. A favor: la respuesta es inmediata, porque no hay que esperar a nadie, y el servidor hace muy poco trabajo. En contra: el juego queda en manos de un equipo que se supone hostil, y QAS-05 sería imposible de cumplir.
+\newline B. El cliente calcula y el servidor comprueba después, revirtiendo si no coincide. A favor: conserva la respuesta inmediata y detecta el fraude. En contra: el jugador ve jugadas aceptadas que luego se revierten, que es justo lo que CRN-12 teme, y obliga a mantener las reglas en los dos extremos.
+\newline C. El cliente propone y el servidor decide; el cliente no calcula nada. A favor: no hay nada que el cliente produzca de lo que haya que desconfiar, y la corrección deja de depender de su versión. En contra: cada acción cuesta un viaje completo y todo el tiempo percibido es real.}
+\parte{Criterios}{Que QAS-05 sea alcanzable; que el jugador nunca vea revertirse algo que se le mostró como aceptado (CRN-12); que quepa en el segundo de QAS-01; y que dos personas puedan construirlo en 14 semanas (ASR-15).}
+\parte{Decisión}{C, que es lo que DEC-02 ya proponía (conceptos CD-01 y CD-02; tácticas: limitar el acceso a la información y validar la entrada). A se descarta porque hace imposible la medida del objetivo; B, porque duplica las reglas, choca con CRN-12 y no ahorra trabajo al servidor, que igual tiene que calcularlo todo para comprobar.}
+\bloque{Consecuencias}
+\parte{Qué se ganó}{Una sola versión de la verdad: la partida es lo que el servidor dice que es, y un cliente modificado no cambia eso. El objetivo se vuelve comprobable, porque basta medir sobre el servidor. La corrección del juego deja de depender de qué versión del cliente tenga cada jugador, lo que simplifica las actualizaciones. Y todo lo que hay que proteger queda de un solo lado.}
+\parte{Qué se pagó}{Cada acción del turno cuesta un viaje completo de ida y vuelta, sin nada local que adelantar: el presupuesto de QAS-01 se consume desde el primer momento y no queda margen para respuestas optimistas. El servidor carga con todo el cálculo, incluido el de RN-05, que es el más caro. Y la interfaz depende de que el servidor le mande lo que necesita para dibujar, lo que obliga a CD-08 y engorda los mensajes.}
+\parte{Riesgos}{R-01, R-02, R-03.}
+\parte{Elementos afectados}{C-01, C-02, C-03, C-04.}
+\end{tabla}
+
+\decision{ADR-002}{El servidor se divide en cuatro servicios dentro de una sola pieza desplegable}
+
+\begin{tabla}{|L{2.9cm}|Y|}
+\adrcab
+\parte{Estado}{Aceptado.}
+\parte{Contexto}{Aceptada ADR-001, hay que decidir cómo se organiza por dentro el servidor. En juego: ASR-02, que necesita que la partida tenga una frontera propia para poder afirmar que su estado no cambió; ASR-15, que fija dos personas y 14 semanas con un incremento verificable cada semana; y ASR-01, porque cada frontera que un mensaje cruza cuesta tiempo. DRV-03 obliga además a que el transporte sea un componente propio.}
+\parte{Alternativas}{A. Un servidor de una sola pieza, sin fronteras internas. A favor: es lo más rápido de arrancar y no cuesta ningún salto. En contra: comunicación, partida y datos quedan mezclados, así que habría que decidirlos a la vez y no se podría probar nada por separado, en contra de CON-14.
+\newline B. Un servicio por área desplegado por separado, cada uno con su proceso. A favor: se pueden escalar y desplegar por separado, y las fronteras quedan garantizadas. En contra: añade despliegue, versionado y saltos de red a un equipo de dos personas (CRN-07), y cada salto se descuenta de QAS-01.
+\newline C. Cuatro servicios con responsabilidades separadas dentro de una misma pieza desplegable: comunicación, partidas, cuentas y acceso a datos. A favor: fronteras claras y llamadas dentro del mismo proceso, y cada servicio se construye y se prueba por separado. En contra: la separación depende de la disciplina del equipo, porque nada impide saltársela.}
+\parte{Criterios}{Que la partida tenga un dueño con frontera propia (ASR-02); que se pueda entregar un incremento verificable por semana (ASR-15, CON-14); que no se agregue latencia evitable (ASR-01); y que quepa en el esfuerzo de dos personas (CRN-07).}
+\parte{Decisión}{C, coherente con DEC-01 (concepto CD-03). A se descarta por CON-14 y porque haría inseparables decisiones que pertenecen a iteraciones distintas; B, por su costo de operación y de latencia, desproporcionado para la escala del proyecto. Si Q-02 se resuelve a favor, la misma pieza se despliega aparte sin cambiar su interior.}
+\bloque{Consecuencias}
+\parte{Qué se ganó}{Las iteraciones siguientes tienen dónde caer sin pisarse: el transporte es de DRV-03 y DRV-04, el acceso a datos es de ASR-05, y ninguna de esas decisiones obliga a abrir el servicio de partidas. Cada servicio se puede probar solo, lo que hace posible el incremento semanal. Y las llamadas entre servicios no cuestan red.}
+\parte{Qué se pagó}{Hay que definir las interfaces internas antes de construir, que es trabajo de diseño por adelantado. La separación no está garantizada por nada más que por el acuerdo del equipo. Y al ser una sola pieza, todas las partidas comparten suerte: un reinicio las afecta a todas.}
+\parte{Riesgos}{R-05, R-08.}
+\parte{Elementos afectados}{C-02, C-03, C-05, C-06.}
+\end{tabla}
+
+\decision{ADR-003}{Las reglas del juego viven en un componente que no conoce pantallas ni conexiones}
+
+\begin{tabla}{|L{2.9cm}|Y|}
+\adrcab
+\parte{Estado}{Aceptado.}
+\parte{Contexto}{Aceptada ADR-001, el servidor tiene que calcularlo todo, y hay que decidir dónde vive ese cálculo. En juego: ASR-02, porque las reglas son lo que distingue una acción legítima de una que no lo es; ASR-06, que más adelante exigirá cambiar los valores de las reglas sin tocar código y verificar una partida completa sin intervención manual; y ASR-01, porque el cálculo de RN-05 ocurre dentro del turno.}
+\parte{Alternativas}{A. Las reglas repartidas dentro del servicio de partidas, junto a turnos, relojes y notificaciones. A favor: no hay que definir ninguna interfaz nueva. En contra: no se puede ejecutar una partida sin levantar el servidor entero, y cualquier cambio de reglas obliga a tocar el servicio que arbitra.
+\newline B. Las reglas duplicadas en cliente y servidor, para que el cliente pueda previsualizar. A favor: la interfaz respondería al instante. En contra: contradice ADR-001 y crea dos versiones que tarde o temprano difieren (CRN-12).
+\newline C. Un componente único de reglas, consumido solo por el servicio de partidas, que recibe una posición y una jugada y responde. A favor: se ejecuta sin red ni interfaz, se puede probar con partidas automáticas y concentra en un solo lugar lo que define la legalidad. En contra: obliga a pasarle la posición completa en cada consulta y a mantener una interfaz más.}
+\parte{Criterios}{Que exista una sola definición de lo que es legal (ASR-02, CRN-12); que se pueda verificar sin intervención manual desde el primer incremento (ASR-06, CON-14); y que su costo quepa en el turno (ASR-01).}
+\parte{Decisión}{C (concepto CD-04; patrón: modelo de dominio aislado). A se descarta porque haría imposible probar sin levantarlo todo y encarecería cualquier cambio de reglas; B, porque contradice la decisión anterior.}
+\bloque{Consecuencias}
+\parte{Qué se ganó}{Se pueden ejecutar partidas completas en pruebas automáticas desde la primera semana, sin red ni interfaz, que es lo que sostiene el incremento semanal y lo que ASR-06 necesitará después. Hay una sola definición de lo legal, así que los dos extremos no pueden discrepar. Y las reglas se pueden cambiar sin tocar el arbitraje.}
+\parte{Qué se pagó}{Una interfaz interna más que definir y mantener, y el costo de pasarle la posición completa en cada consulta. El cálculo de RN-05 queda dentro del turno y compite por el presupuesto de QAS-01, sin que todavía se sepa cuánto consume.}
+\parte{Riesgos}{R-03.}
+\parte{Elementos afectados}{C-03, C-04.}
+\end{tabla}
+
+\decision{ADR-004}{La partida en curso vive en memoria y cada jugada aceptada se registra}
+
+\begin{tabla}{|L{2.9cm}|Y|}
+\adrcab
+\parte{Estado}{Aceptado.}
+\parte{Contexto}{Hay que decidir dónde está la partida mientras se juega. QAS-05 exige poder afirmar que su estado es idéntico antes y después de cada mensaje rechazado, lo que supone un dueño único. DEC-03 exige que la partida no se juegue sin almacenamiento disponible, y CU-20, CU-21 y CU-25 lo repiten en PRE-04. ASR-01 impide meter en el turno la latencia de una infraestructura que no controlamos (DEP-03, DEP-04). ASR-05 acotará después lo que se puede perder.}
+\parte{Alternativas}{A. Sin estado en el servidor: cada jugada lee la partida completa de la base de datos, valida y escribe. A favor: no hay nada que perder en un reinicio y la base de datos es siempre la verdad. En contra: mete dos accesos a un servicio externo dentro de cada turno, lo que hace muy difícil QAS-01, y es lo que CU-21 describe hoy en sus pasos 12 a 19.
+\newline B. Solo memoria: la partida se escribe al terminar. A favor: es lo más rápido posible. En contra: un reinicio pierde partidas enteras y contradice DEC-03 y ASR-05.
+\newline C. Copia de trabajo en memoria por partida, atendida de una en una, con cada jugada aceptada registrada en la base de datos. A favor: se decide y se responde sin esperar al almacenamiento, y la partida se puede reconstruir desde lo registrado. En contra: hay una ventana entre lo respondido y lo escrito, y la memoria crece con las partidas simultáneas.}
+\parte{Criterios}{Que la partida tenga un dueño único y conocido (ASR-02, QAS-05); que el almacenamiento quede fuera del camino de la respuesta (ASR-01); que se pueda reconstruir lo perdido (ASR-05); y que se respete DEC-03.}
+\parte{Decisión}{C (conceptos CD-05 y CD-06; patrones: copia de trabajo con respaldo y objeto activo por partida). A se descarta por QAS-01; B, porque contradice DEC-03 y haría imposible ASR-05. La ventana entre responder y escribir queda abierta a propósito: cuánto puede durar lo decide la iteración de ASR-05.}
+\bloque{Consecuencias}
+\parte{Qué se ganó}{Se puede afirmar que el estado de la partida no cambió, porque hay un solo lugar donde vive. El turno no paga la latencia de una infraestructura externa. La partida se puede reconstruir desde las jugadas registradas, que es lo que CU-21 y CU-26 ya suponían. Y, al atender los mensajes de uno en uno, dos jugadas simultáneas no pueden dejar la partida en una posición imposible.}
+\parte{Qué se pagó}{Existe una ventana en la que lo respondido todavía no está escrito, con el riesgo de que las dos versiones difieran. La memoria del servidor crece con el número de partidas en curso. Y el trabajo dentro del turno tiene que ser corto, porque bloquea la cola de su propia partida, lo que obliga a sacar de ahí toda escritura lenta.}
+\parte{Riesgos}{R-04, R-05, R-01.}
+\parte{Elementos afectados}{C-03, C-06, C-07.}
+\end{tabla}
+
+\decision{ADR-005}{Todo mensaje se comprueba en el punto de entrada y lo rechazado queda registrado}
+
+\begin{tabla}{|L{2.9cm}|Y|}
+\adrcab
+\parte{Estado}{Aceptado.}
+\parte{Contexto}{QAS-05 mide tres cosas a la vez: que se rechacen 200 mensajes inválidos, entre ellos 50 mal formados o de otra versión; que ninguna respuesta lleve datos privados del rival; y que el 100~\% de los intentos quede registrado con cuenta y hora. Hay que decidir dónde se hacen esas comprobaciones. En juego: ASR-02 y, de rebote, ASR-03, porque el mismo punto tendrá que albergar después la protección de lo que viaja (DRV-04). CON-03 impide heredar ninguna de estas comprobaciones del transporte.}
+\parte{Alternativas}{A. Confiar en el identificador de jugador que trae el mensaje y comprobar solo la legalidad de la jugada. A favor: es lo más barato. En contra: un cliente alterado falsifica ese identificador, así que no cubre ni la suplantación ni las solicitudes de datos ajenos.
+\newline B. Que cada servicio se defienda por su cuenta. A favor: cada uno comprueba exactamente lo que necesita. En contra: la misma comprobación queda repetida en cuatro lugares que tarde o temprano difieren, y basta olvidarla en uno para abrir el hueco.
+\newline C. Un punto de entrada único que comprueba forma y versión, resuelve la sesión y la cuenta, autoriza contra la participación en esa partida y registra cada rechazo; el servicio de partidas solo recibe lo que ya pasó. A favor: una sola definición de lo que se acepta, y un solo sitio donde añadir después la protección del tránsito. En contra: agrega un paso por mensaje y concentra trabajo en un punto que puede saturarse.}
+\parte{Criterios}{Cubrir los tres frentes que QAS-05 mide; no confiar en nada que el cliente envíe sobre sí mismo (CRN-23); dejar las reglas de acceso en un solo lugar; y que el costo por mensaje quepa en QAS-01.}
+\parte{Decisión}{C (conceptos CD-07, CD-08 y CD-09; tácticas: validar la entrada, autenticar y autorizar a los actores, limitar el acceso a la información y auditar). A se descarta porque no resiste el supuesto de CRN-23; B, porque reparte la misma regla en cuatro sitios, y una regla repetida es una regla que acabará siendo distinta.}
+\bloque{Consecuencias}
+\parte{Qué se ganó}{Las reglas de acceso están en un solo lugar, y ahí mismo se podrá poner después la protección del tránsito sin tocar los demás servicios. El servicio de partidas recibe solo mensajes bien formados y de quien dice ser, así que se ocupa de reglas y turnos y nada más. Cada rechazo queda como evidencia, que es lo que QAS-07 pide y lo que la moderación de CU-42 a CU-45 necesitará.}
+\parte{Qué se pagó}{Un paso más por mensaje, con su costo dentro del segundo de QAS-01. El punto de entrada concentra trabajo y se vuelve un lugar sensible a la saturación. Y el registro de rechazos es escritura adicional que hay que mantener fuera del camino de la respuesta y acotar, porque un atacante puede provocarla a voluntad.}
+\parte{Riesgos}{R-06, R-07, R-01.}
+\parte{Elementos afectados}{C-02, C-03, C-05, C-08.}
+\end{tabla}
+
+\subsubsection*{Qué queda para la siguiente iteración}
+
+Las cinco decisiones cubren los dos drivers de esta iteración y dejan el sistema partido en ocho elementos. Lo que sigue es DRV-03 sobre C-02: cómo se delimita un mensaje, cómo se versiona y cómo se abre una sesión sobre sockets TCP sin WebSockets. De los riesgos abiertos, R-01 y R-03 se resolverán al repartir el presupuesto de ASR-01; R-04 y R-05, al decidir qué se escribe y cuándo (ASR-05); y R-06, con la protección del tránsito (DRV-04).

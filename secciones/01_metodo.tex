@@ -2,19 +2,21 @@
 \section{Método y estructura del documento}\label{sec:metodo}
 % ============================================================
 
-Este documento aplica los primeros cuatro pasos del método ADD a Bastion. Cada iteración toma un driver arquitectónico, revisa las entradas que le corresponden, fija un objetivo, elige qué elemento del sistema descompone y selecciona los conceptos de diseño con los que lo hará. No es un documento de decisiones tomadas de una vez: cada iteración deja constancia de por qué se eligió lo que se eligió y de qué queda pendiente para la siguiente.
+Este documento aplica el método ADD a Bastion. Primero identifica los requisitos arquitectónicamente significativos, después los convierte en drivers y, por último, desarrolla la primera iteración de diseño: revisa las entradas que corresponden a los drivers de esa iteración, fija un objetivo, elige qué elemento del sistema descompone, selecciona los conceptos de diseño con los que lo hace y registra cada decisión con las alternativas que se compararon y con lo que la decisión cuesta.
 
 % ------------------------------------------------------------
 \subsection{Documentos de entrada}
 
 \begin{tabla}{|L{4.6cm}|Y|}
 \hline
-\filacab \cab{Documento} & \cab{Qué aporta a estas iteraciones} \\ \hline
+\filacab \cab{Documento} & \cab{Qué aporta} \\ \hline
 \endhead
 Análisis de contexto, escenarios de calidad y drivers &
-Objetivos de diseño, stakeholders (STK), concerns (CRN), dependencias (DEP), restricciones (CON) y requisitos impuestos (REQ), tensiones (TEN), preguntas abiertas (Q), características de calidad (QA) y escenarios (QAS) con su Utility Tree. Sus ASR y sus drivers son un antecedente: este documento los vuelve a identificar en las secciones~\ref{sec:asr} y~\ref{sec:priorizacion}. \\ \hline
+Objetivos de diseño, stakeholders (STK), concerns (CRN), dependencias (DEP), restricciones (CON) y requisitos impuestos (REQ), tensiones (TEN), preguntas abiertas (Q), características de calidad (QA) y escenarios (ESC) con su Utility Tree. Sus ASR y sus drivers son un antecedente: este documento los vuelve a identificar en las secciones~\ref{sec:asr} y~\ref{sec:drivers}. \\ \hline
 Casos de uso para Bastion, versión 1.0 &
 Los requisitos funcionales primarios (CU), con sus flujos, precondiciones, reglas de negocio (RN), mensajes del protocolo y entidades de datos. Es la fuente de lo que el sistema tiene que hacer, frente a los drivers, que dicen qué lo vuelve difícil. \\ \hline
+Bass, Clements y Kazman, \emph{Software Architecture in Practice}, cuarta edición &
+El método. De su capítulo~19 sale la definición de ASR y la prueba con la que se identifican; de su capítulo~20, los pasos de ADD, los tipos de concepto de diseño y la forma de compararlos por sus ventajas y desventajas antes de elegir. \\ \hline
 \end{tabla}
 
 Los identificadores se conservan tal como aparecen en esos documentos, de modo que cualquier afirmación de este texto se pueda rastrear hasta su origen sin repetirlo aquí.
@@ -28,49 +30,59 @@ Las secciones se construyen en cadena, y cada una depende solo de las anteriores
 \hline
 \filacab \cab{Sección} & \cab{Qué toma y qué entrega} \\ \hline
 \endhead
-2. ASR & Toma solo los documentos de entrada. Entrega los ASR con su procedencia y su prioridad, y las decisiones del equipo (DEC-01 a DEC-03). \\ \hline
-3. Drivers y su priorización & Toma los ASR y su prioridad. Entrega los drivers, formados agrupando los ASR que dependen de la misma decisión, y el orden de las iteraciones. \\ \hline
-4 en adelante. Iteraciones & Cada una toma un driver con sus ASR y lo decidido en las iteraciones anteriores. Entrega un objetivo, un elemento y los conceptos de diseño que lo satisfacen. \\ \hline
+2. ASR & Toma solo los documentos de entrada. Entrega los quince ASR con su procedencia y su prioridad, y las decisiones del equipo (DEC-01 a DEC-03). \\ \hline
+3. Drivers & Toma los cinco ASR de mayor prioridad. Entrega un driver por cada uno, más general que su ASR y sin soluciones dentro, con el orden heredado. \\ \hline
+4. Iteración 1 & Toma los drivers que le corresponden y los ASR que hay detrás. Entrega un objetivo, un elemento descompuesto, los conceptos de diseño elegidos y las fichas de decisión que los justifican. \\ \hline
 \end{tabla}
 
 % ------------------------------------------------------------
-\subsection{Los cuatro pasos y las entradas del método}
+\subsection{Cómo se enuncian los requisitos y los drivers}
 
-Las entradas del método son cinco: objetivos de diseño, requisitos funcionales primarios, escenarios de atributos de calidad, restricciones y concerns. Los cuatro pasos que cubre este documento son los siguientes.
+Una regla atraviesa las tres secciones: un requisito dice \textbf{qué} tiene que lograr el sistema y un driver dice \textbf{qué problema} plantea ese requisito, pero ninguno de los dos dice \textbf{cómo} se resuelve. Las soluciones aparecen por primera vez en el paso~4 de la iteración, y siempre acompañadas de las alternativas con las que se compararon. La justificación de la regla y los enunciados que hubo que corregir están en las subsecciones~\ref{sec:asr:enunciado} y~\ref{sec:drivers}.
+
+La única excepción son las restricciones, que ya son decisiones tomadas por quien tiene autoridad para tomarlas: se enuncian tal como llegan, y lo que se les exige es la justificación de por qué son arquitectónicamente significativas.
+
+% ------------------------------------------------------------
+\subsection{Los pasos del método y sus entradas}
+
+Las entradas del método son cinco: objetivos de diseño, requisitos funcionales primarios, escenarios de atributos de calidad, restricciones y concerns. Los pasos que cubre este documento son los siguientes.
 
 \begin{tabla}{|L{1.5cm}|L{4.0cm}|Y|}
 \hline
 \filacab \cab{Paso} & \cab{Nombre} & \cab{Qué produce en este documento} \\ \hline
 \endhead
 Paso 1 & Revisión de entradas &
-La lista de entradas que tienen algo que ver con el driver de la iteración, cada una con lo que exige. Se revisan todas; se listan las que aplican. \\ \hline
+La lista de entradas que tienen algo que ver con los drivers de la iteración, cada una con lo que exige. Se revisan todas; se listan las que aplican. \\ \hline
 Paso 2 & Establecer el objetivo de la iteración y seleccionar las entradas &
-Un objetivo único, enunciado en una frase, que satisface un ASR del driver y es alcanzable dentro de la iteración, con la medida que lo comprueba y el incremento que produce. Y la tabla que pesa cada entrada y dice cuáles se atienden ahora y cuáles se difieren, con el motivo. \\ \hline
+Un objetivo enunciado en una frase, que satisface los ASR de los drivers de la iteración y es alcanzable dentro de ella, con la medida que lo comprueba y el incremento que produce. Y la tabla que pesa cada entrada y dice cuáles se atienden ahora y cuáles se difieren, con el motivo. \\ \hline
 Paso 3 & Elegir uno o más elementos a descomponer &
 La ficha del único elemento elegido: qué abarca, por qué se eligió, qué falta decidir sobre él y su trazabilidad. La razón nunca es que sea un módulo del sistema, sino que la medida del objetivo depende de decisiones que todavía no se han tomado sobre él. \\ \hline
 Paso 4 & Elegir los conceptos de diseño que satisfacen las entradas &
-Los conceptos seleccionados, uno por ficha, con su estilo, qué atiende y por qué se eligió frente a las alternativas, sus efectos y su trazabilidad. \\ \hline
+Los conceptos seleccionados, uno por ficha, con su estilo, qué atiende y por qué se eligió frente a las alternativas, sus efectos y su trazabilidad. Con ellos, el elemento del paso~3 queda partido en elementos concretos (C-\ldots) y aparecen los riesgos que quedan abiertos (R-\ldots). \\ \hline
+Cierre & Registro de las decisiones &
+Una ficha por decisión (ADR-\ldots) con su estado, el contexto que obliga a decidir, las alternativas con sus ventajas y desventajas, los criterios tomados de los ASR, la decisión elegida, lo que se ganó, lo que se pagó, los riesgos y los elementos afectados. \\ \hline
 \end{tabla}
 
-Los pasos 5 a 7 del método, instanciar los elementos, definir las interfaces y registrar el bosquejo con las decisiones, quedan fuera del alcance de este documento.
+Un driver no se ``agota'' en una iteración: la iteración lo atiende hasta donde su objetivo alcanza, y lo que queda se nombra al diferirlo. La instanciación completa de los elementos, la definición de sus interfaces y el análisis del avance quedan fuera del alcance de este documento.
 
 % ------------------------------------------------------------
-\subsection{Estructura fija de cada iteración}\label{sec:metodo:plantilla}
+\subsection{Estructura de una iteración}\label{sec:metodo:plantilla}
 
-Todas las iteraciones tienen las mismas cinco subsecciones, en el mismo orden, y terminan en el paso~4.
-
-Cada iteración tiene además \textbf{un solo objetivo y un solo elemento a descomponer}, y termina en un incremento que se puede demostrar y medir. Un objetivo que necesita dos medidas distintas para comprobarse son en realidad dos objetivos, y se parten en dos iteraciones; un driver grande ocupa entonces más de una, en el orden que fija la sección~\ref{sec:priorizacion}. Lo que se deja fuera no se pierde: se nombra la iteración que lo recoge.
+Todas las iteraciones tienen las mismas subsecciones, en el mismo orden, y terminan en las fichas de decisión.
 
 \begin{tabla}{|L{4.6cm}|Y|}
 \hline
 \filacab \cab{Subsección} & \cab{Contenido} \\ \hline
 \endhead
-Driver y alcance & El driver que cubre la iteración, por qué le toca ese turno según la sección~\ref{sec:priorizacion}, y qué decide y qué no decide la iteración. \\ \hline
-Paso 1. Revisión de entradas & Primero, los ASR de la sección~\ref{sec:asr} que el driver agrupa, con el papel de cada uno en la iteración. Después, las cinco entradas del método filtradas por el driver, con las decisiones ya tomadas y las preguntas abiertas que las condicionan. \\ \hline
-Paso 2. Objetivo de la iteración y selección de entradas & El objetivo de la iteración, con el ASR que satisface, y la tabla de priorización de entradas. \\ \hline
+Alcance de la iteración & Los drivers que cubre, por qué esos y no otros, qué decide, qué no decide y con qué decisiones previas cuenta. \\ \hline
+Paso 1. Revisión de entradas & Primero, los drivers de la iteración con el ASR que hay detrás de cada uno. Después, las cinco entradas del método filtradas por esos drivers, con las decisiones ya tomadas y las preguntas abiertas que las condicionan. \\ \hline
+Paso 2. Objetivo de la iteración y selección de entradas & La tabla que pesa las entradas y el objetivo con su medida, su límite y el incremento que produce. \\ \hline
 Paso 3. Elemento a descomponer & Una ficha con el elemento elegido: qué abarca, por qué se eligió, qué falta decidir y su trazabilidad. \\ \hline
-Paso 4. Conceptos de diseño & Una ficha por concepto seleccionado: estilo, descripción, efectos y trazabilidad. \\ \hline
+Paso 4. Conceptos de diseño & Una ficha por concepto seleccionado: estilo, descripción, efectos y trazabilidad. Cierra con los elementos resultantes y los riesgos abiertos. \\ \hline
+Fichas de decisión & Una ficha por decisión, con sus alternativas, sus criterios, lo que se ganó y lo que se pagó. \\ \hline
 \end{tabla}
+
+\textbf{Cuántos drivers por iteración.} Los que compartan objetivo. Una iteración puede cubrir varios drivers si una sola decisión los satisface o los incumple a la vez, y entonces separarlos obligaría a tomar la misma decisión dos veces; y un driver puede necesitar varias iteraciones si su enunciado exige decisiones sobre elementos distintos. Lo que no cambia es que la iteración tenga \textbf{un objetivo y un elemento a descomponer}, y que termine en un incremento que se pueda demostrar y medir.
 
 % ------------------------------------------------------------
 \subsection{Convenciones}
@@ -79,4 +91,5 @@ Paso 4. Conceptos de diseño & Una ficha por concepto seleccionado: estilo, desc
   \item \textbf{Peso de una entrada.} Alto, medio o bajo. Alto significa que la entrada decide la estructura del elemento elegido: hay alternativas que la cumplen y otras que no. Medio, que la condiciona sin decidirla. Bajo, que se cumple dentro de cualquier alternativa razonable.
   \item \textbf{Entrada diferida.} No se descarta: se atiende en una iteración posterior, que se nombra en el momento de diferirla.
   \item \textbf{Concepto de diseño.} Estilo, patrón o táctica. Se nombra por lo que hace y no por una tecnología concreta; la elección de producto o biblioteca no pertenece a estos pasos.
+  \item \textbf{Identificadores propios de este documento.} EL-\ldots, el elemento que una iteración descompone; CD-\ldots, los conceptos de diseño elegidos; C-\ldots, los elementos que resultan de aplicarlos; R-\ldots, los riesgos que quedan abiertos; ADR-\ldots, las fichas de decisión. Los demás identificadores vienen de los documentos de entrada.
 \end{itemize}

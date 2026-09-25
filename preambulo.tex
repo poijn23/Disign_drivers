@@ -103,3 +103,10 @@
   \hline
   \filacab \cab{Elemento} & \cab{Descripción} \\ \hline
   \endhead}
+% Encabezado de una ficha de decisión (ADR)
+\newcommand{\adrcab}{%
+  \hline
+  \filacab \cab{Campo} & \cab{Contenido} \\ \hline
+  \endhead}
+% Título de una ficha de decisión:  \decision{ADR-001}{Título en forma de decisión}
+\newcommand{\decision}[2]{\Needspace*{0.5\textheight}\subsubsection*{#1 · #2}}
