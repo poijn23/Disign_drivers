@@ -106,7 +106,7 @@ ASR-03 &
 Dónde se protege lo que viaja, sobre la conexión o mensaje por mensaje; cómo se gestionan certificados y claves; cómo es el apretón de manos; y cómo se impide que algo capturado se vuelva a usar. &
 Hacer viajar el protocolo propio en claro, sin apretón de manos ni vencimiento de sesiones. \\ \hline
 ASR-04 &
-Que la permanencia del jugador en la partida sea independiente de la conexión que lo trajo, cómo se reconoce una conexión medio abierta, cómo se reasocia al jugador desde otro equipo, dónde vive el estado mientras no está y qué reloj mide los plazos. &
+De qué depende la permanencia del jugador en la partida, cómo se reconoce una conexión medio abierta, cómo se reasocia al jugador desde otro equipo, dónde vive el estado mientras no está y qué reloj mide los plazos. &
 Ligar la partida al socket y darla por terminada cuando la conexión se cierra. \\ \hline
 ASR-05 &
 Qué se escribe de forma confirmada y qué de forma diferida, cuánto se puede perder, cómo se reconoce la pérdida del almacenamiento, qué ocurre con las partidas mientras no está y cómo se reconstruyen. &
@@ -193,7 +193,7 @@ Las dos calificaciones se combinan en cuatro niveles. Un ASR (H, H) es \textbf{p
 2 & ASR-02 & H. Lo exige STK-15, que da por hecho un cliente alterado (CRN-23). & H. Separa un extremo que decide de uno que solo retransmite, y ese cambio rehace cliente, servidor y protocolo. & Prioritario \\ \hline
 3 & ASR-14 & H. La tecnología la asigna el cliente (STK-03) y no se negocia. & H. Obliga a un protocolo propio y a un modelo relacional, que otras tecnologías darían resueltos. & Prioritario \\ \hline
 4 & ASR-03 & H. Sin él, el segundo factor de REQ-03 no protege nada y el chat de menores viaja legible (STK-15, STK-02). & H. Dónde se protege lo que viaja cambia el formato de los mensajes en los dos extremos. & Prioritario \\ \hline
-5 & ASR-04 & H. Los jugadores son niños en redes domésticas inestables (CRN-06, STK-01). & H. Obliga a que la permanencia en la partida no dependa de la conexión, lo que toca servidor, protocolo y cliente. & Prioritario \\ \hline
+5 & ASR-04 & H. Los jugadores son niños en redes domésticas inestables (CRN-06, STK-01). & H. Obliga a decidir de qué depende la permanencia en la partida, y la respuesta toca los dos extremos y la comunicación entre ellos. & Prioritario \\ \hline
 6 & ASR-01 & H. Es el único requisito con un número impuesto (REQ-02). & H. Su reparto cambia el flujo de la jugada en todos los componentes que atraviesa. & Prioritario \\ \hline
 7 & ASR-05 & H. Lo exige STK-13 (CRN-19), sobre un almacenamiento alojado por un tercero (DEP-03, DEP-04). & H. Decide qué componente tiene el estado vigente y cuándo se escribe. & Prioritario \\ \hline
 8 & ASR-06 & H. El diseñador cambiará las reglas decenas de veces (CRN-13) y CON-15 puede obligar a variantes. & H. Decide de qué depende el componente que ejecuta las reglas y si su resultado se puede reproducir. & Prioritario \\ \hline

@@ -11,7 +11,7 @@
 \parte{Por qué los dos juntos}{Comparten el mismo objetivo y no se pueden comprobar por separado. DRV-01 pide que una partida entre equipos distintos llegue hasta el final; DRV-02 pide que ese final dependa solo de acciones legítimas. Una partida que se completa pero que un cliente alterado puede torcer no cumple ninguno de los dos, y una partida íntegra que no se puede terminar tampoco. Además, las dos alternativas en juego son las mismas: quién de los dos extremos produce el juego. Separarlos obligaría a tomar la misma decisión dos veces.}
 \parte{Qué decide}{La estructura general del sistema: en qué partes se divide, de qué extremo depende que una partida sea correcta y dónde vive lo que la partida tiene en común mientras dura.}
 \parte{Qué no decide}{Cómo viaja un mensaje: la delimitación, el versionado y el apretón de manos son de DRV-03 y se deciden en la iteración siguiente. Tampoco decide cómo se protege lo que viaja (DRV-04), cómo vuelve un jugador después de un corte (DRV-05), el reparto del segundo por jugada (ASR-01), qué se escribe y cuándo (ASR-05) ni cómo se parametrizan las reglas (ASR-06).}
-\parte{Decisiones previas}{El equipo ya tomó DEC-01, DEC-02 y DEC-03, registradas en la sección~\ref{sec:asr}. Entran como candidatas con respaldo, no como hechos incuestionables: esta iteración es donde se comparan con sus alternativas y quedan registradas con su razonamiento en las fichas ADR-001 a ADR-003.}
+\parte{Decisiones previas}{El equipo ya tomó DEC-01, DEC-02 y DEC-03, registradas en la sección~\ref{sec:asr}. Entran como candidatas con respaldo, no como hechos incuestionables: esta iteración es donde se comparan con sus alternativas y quedan registradas con su razonamiento en las fichas ADR-001, ADR-002 y ADR-004.}
 \parte{Con qué termina}{Con las fichas de decisión de la subsección~\ref{sec:it01:adr}. La instanciación completa de los elementos, sus interfaces y el análisis de la iteración quedan para los pasos siguientes del método.}
 \end{tabla}
 
@@ -348,9 +348,9 @@ R-08 & Construir el protocolo propio, los cuatro servicios y el componente de re
 \end{tabla}
 
 % ------------------------------------------------------------
-\subsection{Fichas de decisión}\label{sec:it01:adr}
+\subsection{Fichas de decisión (ADR)}\label{sec:it01:adr}
 
-Cada ficha registra una decisión de esta iteración con las alternativas que se compararon, los criterios con que se compararon y lo que la decisión cuesta. Las tres primeras corresponden a las decisiones que el equipo traía tomadas (DEC-01 a DEC-03) y que aquí quedan justificadas; las dos últimas son nuevas.
+Cada ficha registra una decisión de esta iteración con las alternativas que se compararon, los criterios con que se compararon y lo que la decisión cuesta. Las decisiones que el equipo traía tomadas quedan justificadas aquí: DEC-01 en ADR-001 y ADR-002, DEC-02 en ADR-001 y DEC-03 en ADR-004. ADR-003 y ADR-005 son nuevas: ADR-003 decide dónde vive, dentro del servidor, la lógica que DEC-02 le asigna, y ADR-005 dónde se comprueba cada mensaje.
 
 \decision{ADR-001}{El servidor produce el juego y el cliente solo lo presenta}
 
