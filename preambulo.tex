@@ -109,4 +109,6 @@
   \filacab \cab{Campo} & \cab{Contenido} \\ \hline
   \endhead}
 % Título de una ficha de decisión:  \decision{ADR-001}{Título en forma de decisión}
-\newcommand{\decision}[2]{\Needspace*{0.5\textheight}\subsubsection*{#1 · #2}}
+% (sin número, pero con entrada propia en el índice)
+\newcommand{\decision}[2]{\Needspace*{0.5\textheight}\subsubsection*{#1 · #2}%
+  \addcontentsline{toc}{subsubsection}{#1 · #2}}

@@ -37,27 +37,27 @@ DRV-01 &
 El sistema sostiene el desarrollo completo de una partida entre jugadores que están en equipos distintos, de modo que todos los participantes vean el mismo juego. &
 Funcionalidad primaria &
 ASR-08 (orden 1) &
-Es el driver que obliga a que el sistema tenga más de un extremo. De él dependen la existencia de una comunicación, de un lugar donde vive lo común a todos los participantes y de un almacenamiento compartido. Sin él, Bastion sería un programa en un solo equipo y ninguno de los otros cuatro drivers tendría sentido. \\ \hline
+Es el driver que obliga a que el sistema tenga más de un extremo. Obliga a decidir cómo se comunican esos extremos, dónde se mantiene lo que la partida tiene en común para todos los participantes y dónde se conservan cuentas y resultados. Sin él, Bastion sería un programa en un solo equipo y ninguno de los otros cuatro drivers tendría sentido. \\ \hline
 DRV-02 &
 El desarrollo y el resultado de una partida dependen únicamente de acciones legítimas, y cada participante conoce solo lo que le corresponde, sin suponer que su equipo sea confiable. &
 Atributo de calidad: seguridad (integridad y confidencialidad) &
 ASR-02 (orden 2) &
-Obliga a decidir de qué extremo depende que una partida sea correcta y dónde se ejecutan las reglas. Es la decisión que CRN-10 describe como la más cara de cambiar: si se cambia después, cada mensaje cambia de significado, porque deja de ser una propuesta y pasa a ser un hecho, y hay que rehacer los dos extremos a la vez. \\ \hline
+Obliga a decidir de qué extremo depende que una partida sea correcta y dónde se ejecutan las reglas. Es la decisión que CRN-10 describe como la más cara de cambiar: si se cambia después, cada mensaje cambia de significado, porque pasa de ser un hecho que se acepta a una propuesta que alguien juzga, o al revés, y hay que rehacer los dos extremos a la vez. \\ \hline
 DRV-03 &
 La solución se construye con C\# sobre .NET, almacena sus datos en SQL Server y se comunica mediante sockets TCP, sin WebSockets. &
 Restricción &
 ASR-14 (orden 3) &
-Elimina las alternativas que traen resuelto el transporte. Sin WebSockets, la delimitación de los mensajes, el versionado, el apretón de manos y la protección de lo que viaja pasan a ser componentes que el equipo diseña y mantiene. SQL Server fija un modelo relacional para todo lo que se conserve, y un único ecosistema permite que los dos extremos compartan código. Es una decisión ya tomada, pero condiciona todas las demás. \\ \hline
+Elimina las alternativas que traen resuelto el transporte. Sin WebSockets, la delimitación de los mensajes, el versionado, el apretón de manos y la protección de lo que viaja pasan a ser responsabilidad del equipo, que tiene que decidir cómo resolverlos. SQL Server fija un modelo relacional para todo lo que se conserve, y un único ecosistema permite que los dos extremos compartan código. Es una decisión ya tomada, pero condiciona todas las demás. \\ \hline
 DRV-04 &
 Lo que el jugador y el sistema intercambian no resulta aprovechable para un tercero que lo observe o lo repita. &
 Atributo de calidad: seguridad (confidencialidad) &
 ASR-03 (orden 4) &
-Afecta a los dos extremos al mismo tiempo y al formato de todos los mensajes, y su costo se descuenta del tiempo de respuesta comprometido. Decidirlo tarde obliga a rehacer el protocolo ya construido y a cambiar los clientes ya distribuidos. \\ \hline
+Obliga a decidir dónde y cómo se protege lo que se intercambia, y cualquier forma de hacerlo involucra a los dos extremos y a todo lo que viaja entre ellos. Su costo se descuenta del tiempo de respuesta comprometido. Decidirlo tarde obliga a rehacer el protocolo ya construido y a cambiar los clientes ya distribuidos. \\ \hline
 DRV-05 &
 La partida y la posición del jugador dentro de ella sobreviven a la interrupción de su comunicación y a un cambio de equipo. &
 Atributo de calidad: fiabilidad (recuperabilidad) &
 ASR-04 (orden 5) &
-Obliga a que la permanencia del jugador en la partida no dependa del canal que lo trajo, y a que lo común a la partida siga existiendo mientras él no está. Es lo que separa una arquitectura donde la partida vive atada a una conexión de otra donde la conexión es solo el medio por el que se llega a ella. \\ \hline
+Obliga a decidir de qué depende que un jugador siga perteneciendo a su partida, cómo se reconoce que su comunicación se interrumpió, dónde se conserva la partida mientras él no está y cómo se le vuelve a asociar desde otro equipo. La respuesta cambia la relación entre la partida y la comunicación, y con ella a los dos extremos. \\ \hline
 \end{tabla}
 
 \textbf{Qué se generalizó y qué se retiró.} La tabla siguiente deja a la vista la conversión, para que se pueda comprobar regla por regla.
